@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kiwi Freeview Hub</title>
-    <!-- We bring back the specialized Video JS video engine -->
-    <link href="https://zencdn.net" rel="stylesheet" />
     <style>
         body {
             background-color: #121212;
@@ -18,39 +16,40 @@
             align-items: center;
         }
         h1 {
-            margin-bottom: 20px;
-            font-size: 24px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-size: 26px;
         }
-        .video-box {
-            width: 100%;
-            max-width: 800px;
+        p {
+            color: #888888;
             margin-bottom: 25px;
-            border-radius: 12px;
-            overflow: hidden;
-            background-color: #000;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            text-align: center;
+            font-size: 14px;
         }
-        .video-js {
-            width: 100%;
-            aspect-ratio: 16/9;
-        }
+        /* Layout Grid for TV Channels */
         .grid-layout {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
             width: 100%;
-            max-width: 800px;
+            max-width: 600px;
+            margin-bottom: 30px;
         }
         .btn-channel {
-            background-color: #242424;
+            background-color: #1e1e1e;
             color: white;
-            border: 2px solid #3a3a3a;
-            padding: 20px 10px;
+            border: 2px solid #333333;
+            padding: 25px 15px;
             font-size: 16px;
             font-weight: bold;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: 0.1s;
+            transition: all 0.2s ease;
+        }
+        /* Distinct visual cue for third-party platforms */
+        .btn-external {
+            background-color: #1c2d42;
+            border-color: #3b5998;
         }
         .btn-channel:active {
             background-color: #0084ff;
@@ -62,35 +61,26 @@
 <body>
 
     <h1>🇳🇿 Kiwi Freeview Hub</h1>
+    <p>Select a source to launch streaming playback safely without browser blocks.</p>
 
-    <div class="video-box">
-        <video id="tv-player" class="video-js vjs-default-skin" controls preload="auto">
-            <!-- Defaults to TVNZ 1 on start -->
-            <source src="https://mjh.nz" type="application/x-mpegURL">
-        </video>
-    </div>
-
+    <!-- LIVE TV SELECTION PLATFORMS -->
     <div class="grid-layout">
-        <!-- We use the precise streaming database feeds provided by Matt Huisman -->
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">TVNZ 1</button>
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Three</button>
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Bravo</button>
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Māori TV</button>
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Sky Open</button>
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Rush</button>
+        <!-- Official Free-to-Air web stream pages optimized for mobile browsers -->
+        <button class="btn-channel" onclick="launchStream('https://tvnz.co.nz')">TVNZ 1</button>
+        <button class="btn-channel" onclick="launchStream('https://tvnz.co.nz')">TVNZ 2</button>
+        <button class="btn-channel" onclick="launchStream('https://threenow.co.nz')">Three</button>
+        <button class="btn-channel" onclick="launchStream('https://threenow.co.nz')">Bravo</button>
+        
+        <!-- Linking your experimental alternative streaming site directly -->
+        <button class="btn-channel btn-external" onclick="launchStream('https://vidbox.vc/live-tv')">VidBox TV 🌐</button>
     </div>
 
-    <!-- Load the video player script engine from the cloud -->
-    <script src="https://zencdn.net"></script>
     <script>
-        var player = videojs('tv-player');
-
-        function tuneChannel(streamUrl) {
-            player.src({
-                src: streamUrl,
-                type: 'application/x-mpegURL'
-            });
-            player.play();
+        // JavaScript launcher script 
+        function launchStream(targetUrl) {
+            // '_blank' instructs the browser engine to deploy a clean tab 
+            // bypassing parent frame sandboxes and avoiding the sad-face block
+            window.open(targetUrl, '_blank');
         }
     </script>
 </body>
