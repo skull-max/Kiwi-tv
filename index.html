@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kiwi Freeview Hub</title>
+    <!-- We bring back the specialized Video JS video engine -->
+    <link href="https://zencdn.net" rel="stylesheet" />
     <style>
         body {
             background-color: #121212;
             color: #ffffff;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -19,7 +21,6 @@
             margin-bottom: 20px;
             font-size: 24px;
         }
-        /* The Video Container Box */
         .video-box {
             width: 100%;
             max-width: 800px;
@@ -29,10 +30,9 @@
             background-color: #000;
             box-shadow: 0 10px 30px rgba(0,0,0,0.7);
         }
-        iframe {
+        .video-js {
             width: 100%;
             aspect-ratio: 16/9;
-            border: none;
         }
         .grid-layout {
             display: grid;
@@ -63,29 +63,34 @@
 
     <h1>🇳🇿 Kiwi Freeview Hub</h1>
 
-    <!-- 
-      Instead of using a raw video tag which mobile browsers block, 
-      we use an 'iframe' windows container. This acts as an embedded 
-      mini-browser that loads the video streams completely naturally.
-    -->
     <div class="video-box">
-        <iframe id="tv-screen" src="https://threenow.co.nz" allowfullscreen allow="autoplay"></iframe>
+        <video id="tv-player" class="video-js vjs-default-skin" controls preload="auto">
+            <!-- Defaults to TVNZ 1 on start -->
+            <source src="https://mjh.nz" type="application/x-mpegURL">
+        </video>
     </div>
 
     <div class="grid-layout">
-        <!-- We use touch-friendly web streaming layouts optimized for browser windows -->
-        <button class="btn-channel" onclick="tuneChannel('https://tvnz.co.nz')">TVNZ 1</button>
-        <button class="btn-channel" onclick="tuneChannel('https://tvnz.co.nz')">TVNZ 2</button>
-        <button class="btn-channel" onclick="tuneChannel('https://tvnz.co.nz')">Duke</button>
-        <button class="btn-channel" onclick="tuneChannel('https://threenow.co.nz')">Three</button>
-        <button class="btn-channel" onclick="tuneChannel('https://threenow.co.nz')">Bravo</button>
-        <button class="btn-channel" onclick="tuneChannel('https://threenow.co.nz')">Eden</button>
+        <!-- We use the precise streaming database feeds provided by Matt Huisman -->
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">TVNZ 1</button>
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Three</button>
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Bravo</button>
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Māori TV</button>
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Sky Open</button>
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Rush</button>
     </div>
 
+    <!-- Load the video player script engine from the cloud -->
+    <script src="https://zencdn.net"></script>
     <script>
-        // Simple JavaScript controller to swap the iframe target source
-        function tuneChannel(webUrl) {
-            document.getElementById('tv-screen').src = webUrl;
+        var player = videojs('tv-player');
+
+        function tuneChannel(streamUrl) {
+            player.src({
+                src: streamUrl,
+                type: 'application/x-mpegURL'
+            });
+            player.play();
         }
     </script>
 </body>
