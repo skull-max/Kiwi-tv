@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
-            background-color: #12121c;
+            background-color: #0b0b12;
             color: #ffffff;
             margin: 0;
             padding: 15px;
@@ -17,20 +17,20 @@
         }
         .container {
             width: 100%;
-            max-width: 700px;
+            max-width: 650px;
         }
-        .player-frame-box {
+        .frame-box {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio Boundary */
-            background: #000;
+            padding-top: 56.25%; /* Fixed 16:9 Screen Dimension */
+            background: #000000;
             border-radius: 12px;
             overflow: hidden;
             margin-bottom: 20px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-            border: 1px solid #222232;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            border: 1px solid #1f1f2e;
         }
-        .player-frame-box iframe {
+        .frame-box iframe {
             position: absolute;
             top: 0;
             left: 0;
@@ -38,29 +38,33 @@
             height: 100%;
             border: none;
         }
-        .control-panel {
-            background-color: #1a1a26;
+        .dashboard-panel {
+            background-color: #14141f;
             border-radius: 10px;
             padding: 20px;
-            border: 1px solid #2a2a3a;
+            border: 1px solid #252538;
             text-align: center;
         }
         h2 {
-            margin-top: 0;
-            font-size: 20px;
-            color: #ff9f43;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+            color: #f39c12;
         }
-        .btn-group {
+        .instruction {
+            color: #8a8a9e;
+            font-size: 14px;
+            margin: 0 0 20px 0;
+        }
+        .btn-stack {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            margin-top: 15px;
         }
-        .stream-btn {
-            background: #252538;
-            border: 1px solid #3b3b54;
-            color: #fff;
-            padding: 15px;
+        .control-btn {
+            background: #1e1e2d;
+            border: 1px solid #32324d;
+            color: #ffffff;
+            padding: 16px;
             font-size: 15px;
             font-weight: 600;
             border-radius: 8px;
@@ -71,59 +75,54 @@
             gap: 10px;
             transition: background 0.2s, border-color 0.2s;
         }
-        .stream-btn:active {
-            background: #ff9f43;
-            color: #000;
-            border-color: #ff9f43;
+        .control-btn:active {
+            background: #f39c12;
+            color: #000000;
+            border-color: #f39c12;
         }
         .badge {
             font-size: 11px;
-            background: #34495e;
             padding: 3px 8px;
             border-radius: 4px;
             text-transform: uppercase;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- PERSISTENT TARGET FRAME CANVAS -->
-    <div class="player-frame-box">
-        <iframe id="targetFrame" src="player.html" allow="autoplay; fullscreen"></iframe>
+    <!-- PERSISTENT VISUAL VIEWPORT WRAPPER FRAME -->
+    <div class="frame-box">
+        <iframe id="playerFrame" src="player.html" allow="autoplay; fullscreen"></iframe>
     </div>
 
-    <!-- STREAM CODING MANAGEMENT DASHBOARD -->
-    <div class="control-panel">
-        <h2>🪔 SGPC Amritsar Live Directory</h2>
-        <p style="color:#8a8a9e; font-size:14px; margin:0;">Select your preferred underlying engine option to patch the live stream feed straight to your frame:</p>
+    <!-- RE-ENGINEERED INPUT ROUTER HOOK -->
+    <div class="dashboard-panel">
+        <h2>🪔 SGPC Sri Amritsar Live Portal</h2>
+        <p class="instruction">Choose an engine layout below. This injects the live data feeds directly into your target frame environment:</p>
         
-        <div class="btn-group">
-            <!-- Option 1: YouTube Live Stream Embedded Path -->
-            <button class="stream-btn" onclick="sendMedia('youtube', 'https://youtube.com')">
-                <span>Option 1: Play Stream via YouTube Live Engine</span>
-                <span class="badge" style="background:#e74c3c;">YT Portal</span>
+        <div class="btn-stack">
+            <!-- OPTION 1: Official YouTube Live Embed Target Route Link -->
+            <button class="control-btn" onclick="injectStream('youtube', 'https://youtube.com')">
+                <span>Option 1: Play via YouTube Live Engine</span>
+                <span class="badge" style="background:#e74c3c; color: #fff;">YouTube</span>
             </button>
             
-            <!-- Option 2: IPTV Playlist URL (Direct streaming codec link extracted from standard playlists) -->
-            <button class="stream-btn" onclick="sendMedia('iptv', 'https://akamaized.net')">
-                <span>Option 2: Play Stream via IPTV Playlist Codec</span>
-                <span class="badge" style="background:#2ecc71;">M3U8 Direct</span>
+            <!-- OPTION 2: High-Quality Direct Network PTC IPTV Feed (Verified Live Backup Endpoint) -->
+            <button class="control-btn" onclick="injectStream('iptv', 'https://akamaized.net')">
+                <span>Option 2: Play via IPTV Playlist Codec</span>
+                <span class="badge" style="background:#2ecc71; color: #000;">M3U8 Direct</span>
             </button>
         </div>
     </div>
 </div>
 
 <script>
-    function sendMedia(mediaType, url) {
-        const frameWindow = document.getElementById('targetFrame').contentWindow;
-        
-        // Safely shoot structural data commands directly across the frame barrier
-        frameWindow.postMessage({
-            type: "PLAY_STREAM",
-            mediaType: mediaType,
-            url: url
-        }, "*");
+    function injectStream(type, url) {
+        const frame = document.getElementById('playerFrame');
+        // Instantly force-re-routes the layout parameters via a clean localized secure URL string
+        frame.src = `player.html?type=${type}&url=${encodeURIComponent(url)}`;
     }
 </script>
 
