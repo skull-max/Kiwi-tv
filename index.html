@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Universal Multi-Source Matrix</title>
     
-    <!-- We load Hls.js to handle the raw public .m3u8 CDN links internally when chosen from the dropdowns -->
+    <!-- Programmatic HLS stream unpacker engine used to load direct CDN links natively -->
     <script src="https://jsdelivr.net"></script>
 
     <style>
-        /* CSS reset layer preventing layout collision and viewport clipping */
+        /* CSS reset layout constraints preventing touch-scaling glitches */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
@@ -22,7 +22,7 @@
             overflow: hidden;
         }
 
-        /* TOP VIEWER STAGE: Keeps your TV view locked on top of mobile layouts */
+        /* 1. VIEWPORT LAYOUT: Keeps your media window cleanly locked on top */
         .screen-container {
             width: 100%;
             aspect-ratio: 16/9;
@@ -43,7 +43,7 @@
             display: none;
         }
 
-        /* LOWER SCROLL GRID: Scrollable card layout below the player screen */
+        /* 2. LOWER TOUCH SECTION: Grid items scroll completely free underneath the stream screen */
         .scrollable-channels {
             flex: 1;
             overflow-y: auto;
@@ -65,12 +65,11 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Forms 2 clean columns on phones/tablets */
+            grid-template-columns: repeat(2, 1fr);
             gap: 12px;
             margin-bottom: 25px;
         }
 
-        /* Modular container containing channel action key and source menu together */
         .channel-card {
             background-color: #171722;
             border: 1px solid #29293a;
@@ -79,7 +78,6 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         .btn-play {
@@ -92,14 +90,12 @@
             border-radius: 8px;
             cursor: pointer;
             text-align: center;
-            transition: background-color 0.1s;
         }
 
         .btn-play:active {
-            background-color: #3b82f6; /* Flash blue on finger touch execution */
+            background-color: #3b82f6;
         }
 
-        /* Dropdown selection bar custom design mapping */
         .source-selector {
             background-color: #0d0d14;
             color: #a1a1aa;
@@ -112,16 +108,11 @@
             outline: none;
             cursor: pointer;
         }
-
-        .source-selector:focus {
-            border-color: #3b82f6;
-            color: #ffffff;
-        }
     </style>
 </head>
 <body>
 
-    <!-- VISUAL HUB DISPLAY PORTAL -->
+    <!-- VISUAL MEDIA PLAYER DISPLAY STAGE -->
     <div class="screen-container">
         <video id="native-engine-display" controls autoplay playsinline></video>
         <iframe id="youtube-engine-display" allowfullscreen allow="autoplay; encrypted-media"></iframe>
@@ -137,10 +128,10 @@
             <div class="channel-card">
                 <button class="btn-play" onclick="tuneMatrixChannel('sgpc')">✨ SGPC Live</button>
                 <select id="src-sgpc" class="source-selector">
-                    <option value="yt:Qv2eRRU_56A">Option 1: YouTube Live</option>
-                    <option value="yt:vFXADUnLJ89FMc7y">Option 2: Backup Live</option>
-                    <option value="m3u:https://mux.dev">Option 3: Mux CDN Test</option>
-                    <option value="m3u:https://longtailvideo.com">Option 4: BipBop CDN Test</option>
+                    <option value="yt_live:UCkA21M22vGK9GtAvq3DvSlA">Source 1: Official Channel Feed</option>
+                    <option value="yt_vid:Qv2eRRU_56A">Source 2: Direct Video Link</option>
+                    <option value="m3u:https://mux.dev">Source 3: Test Loop 1</option>
+                    <option value="m3u:https://longtailvideo.com">Source 4: Test Loop 2</option>
                 </select>
             </div>
 
@@ -148,10 +139,10 @@
             <div class="channel-card">
                 <button class="btn-play" onclick="tuneMatrixChannel('ptc')">🎵 PTC Punjabi</button>
                 <select id="src-ptc" class="source-selector">
-                    <option value="yt:b2_x60nNf7o">Option 1: YouTube Feed</option>
-                    <option value="m3u:https://akamaized.net">Option 2: India News CDN</option>
-                    <option value="m3u:https://mux.dev">Option 3: Mux Video Loop</option>
-                    <option value="yt:Qv2eRRU_56A">Option 4: SGPC Backup Feed</option>
+                    <option value="yt_live:UCHJW1_0oPzYZl89wX_jhrgA">Source 1: Official Channel Feed</option>
+                    <option value="yt_vid:b2_x60nNf7o">Source 2: Direct Video Link</option>
+                    <option value="m3u:https://akamaized.net">Source 3: Indian CDN Network</option>
+                    <option value="m3u:https://mux.dev">Source 4: Test Video Loop</option>
                 </select>
             </div>
 
@@ -159,21 +150,21 @@
             <div class="channel-card">
                 <button class="btn-play" onclick="tuneMatrixChannel('skynews')">🇬🇧 Sky News</button>
                 <select id="src-skynews" class="source-selector">
-                    <option value="yt:qhnX4jA0A5paNd1v-zEysw">Option 1: YouTube Live</option>
-                    <option value="m3u:https://akamaized.net">Option 2: NASA TV Public</option>
-                    <option value="m3u:https://akamaized.net">Option 3: NHK World CDN</option>
-                    <option value="m3u:https://mux.dev">Option 4: Mux System Test</option>
+                    <option value="yt_live:UCqhnX4jA0A5paNd1v-zEysw">Source 1: Official Channel Feed</option>
+                    <option value="m3u:https://akamaized.net">Source 2: NASA TV Public</option>
+                    <option value="m3u:https://akamaized.net">Source 3: NHK World CDN</option>
+                    <option value="m3u:https://mux.dev">Source 4: Test Video Loop</option>
                 </select>
             </div>
 
-            <!-- CARD MODULE 4: ENTERTAINMENT & TECH -->
+            <!-- CARD MODULE 4: ENTERTAINMENT & SPORT -->
             <div class="channel-card">
                 <button class="btn-play" onclick="tuneMatrixChannel('redbull')">🏎️ Red Bull TV</button>
                 <select id="src-redbull" class="source-selector">
-                    <option value="m3u:https://amagi.tv">Option 1: IPTV CDN Link</option>
-                    <option value="m3u:https://mux.dev">Option 2: Mux Stream Test</option>
-                    <option value="m3u:https://longtailvideo.com">Option 3: BipBop Feed</option>
-                    <option value="yt:Qv2eRRU_56A">Option 4: Devotional Monitor</option>
+                    <option value="m3u:https://amagi.tv">Source 1: IPTV CDN Link</option>
+                    <option value="m3u:https://mux.dev">Source 2: Mux Stream Test</option>
+                    <option value="m3u:https://longtailvideo.com">Source 3: BipBop Engine Feed</option>
+                    <option value="yt_vid:Qv2eRRU_56A">Source 4: Devotional Backup</option>
                 </select>
             </div>
 
@@ -181,13 +172,12 @@
 
     </div>
 
-    <!-- MACHINE ROUTING LOGIC ENGINE -->
+    <!-- CORE INTERNAL INTERFACE LOGIC ENGINE -->
     <script>
         const cdnVideo = document.getElementById('native-engine-display');
         const ytIframe = document.getElementById('youtube-engine-display');
         let activeHlsLinkInstance = null;
 
-        // Clean out display resources completely to prevent layout overlaps
         function resetActiveViewports() {
             if (activeHlsLinkInstance) {
                 activeHlsLinkInstance.destroy();
@@ -201,23 +191,27 @@
             ytIframe.src = '';
         }
 
-        // Primary Evaluator: Reads drop-down selection parameters and routes them to the correct internal engine
         function tuneMatrixChannel(channelKey) {
             resetActiveViewports();
             
-            // Reads whichever specific drop-down item is selected for the targeted channel card
             const dropdownElement = document.getElementById('src-' + channelKey);
             const chosenValue = dropdownElement.value;
 
-            // Route 1: Target value starts with YouTube prefix sequence
-            if (chosenValue.startsWith('yt:')) {
-                const videoId = chosenValue.substring(3); // Drops the formatting tag "yt:"
+            // Route Type A: Permanent Unexpiring Live Channel ID Feed
+            if (chosenValue.startsWith('yt_live:')) {
+                const channelId = chosenValue.substring(8); 
+                ytIframe.style.display = 'block';
+                ytIframe.src = "https://youtube.com" + channelId + "&autoplay=1&mute=0&rel=0";
+            } 
+            // Route Type B: Direct Explicit Video ID Feed
+            else if (chosenValue.startsWith('yt_vid:')) {
+                const videoId = chosenValue.substring(7); 
                 ytIframe.style.display = 'block';
                 ytIframe.src = "https://youtube.com" + videoId + "?autoplay=1&mute=0&rel=0";
             } 
-            // Route 2: Target value starts with open IPTV network path sequence
+            // Route Type C: Internal HLS Stream Player for CDN Nodes
             else if (chosenValue.startsWith('m3u:')) {
-                const streamUrl = chosenValue.substring(4); // Drops the formatting tag "m3u:"
+                const streamUrl = chosenValue.substring(4); 
                 cdnVideo.style.display = 'block';
 
                 if (Hls.isSupported()) {
@@ -225,7 +219,7 @@
                     activeHlsLinkInstance.loadSource(streamUrl);
                     activeHlsLinkInstance.attachMedia(cdnVideo);
                     activeHlsLinkInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                        cdnVideo.play().catch(err => console.log("Autoplay buffer restriction cleared."));
+                        cdnVideo.play().catch(err => console.log("Blocked browser autoplay safety trigger."));
                     });
                 } else if (cdnVideo.canPlayType('application/x-mpegURL')) {
                     cdnVideo.src = streamUrl;
@@ -234,7 +228,7 @@
             }
         }
 
-        // AUTO-LAUNCH BLOCK: Runs SGPC selection instantly upon initial page compilation
+        // Auto-run SGPC channel choice when the portal opens
         tuneMatrixChannel('sgpc');
     </script>
 </body>
