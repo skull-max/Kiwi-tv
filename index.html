@@ -35,13 +35,13 @@
             border: none;
         }
 
-        /* SCROLLABLE GRID ZONE: Allows endless scrolling for channels underneath */
+        /* SCROLLABLE GRID ZONE: Layout wrapper for elements underneath the player */
         .scrollable-channels {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
             padding-bottom: 50px;
-            -webkit-overflow-scrolling: touch; /* Fluid scrolling mechanics */
+            -webkit-overflow-scrolling: touch;
         }
 
         .category-title {
@@ -55,7 +55,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 Column split setup */
+            grid-template-columns: 1fr; /* Single column for a clean full-width button layout */
             gap: 10px;
             margin-bottom: 25px;
         }
@@ -72,13 +72,14 @@
             transition: background-color 0.1s;
         }
 
-        /* Distinct color tags for visual separation */
-        .btn-yt { background-color: #1f1212; border-left: 4px solid #ef4444; }
-        .btn-vlc { background-color: #1f1812; border-left: 4px solid #f97316; }
+        .btn-yt { 
+            background-color: #1f1212; 
+            border-left: 4px solid #ef4444; 
+        }
 
         .btn:active {
             background-color: #272736;
-            transform: scale(0.96);
+            transform: scale(0.98);
         }
     </style>
 </head>
@@ -86,31 +87,17 @@
 
     <!-- VISUAL MEDIA PLAYER DISPLAY STAGE -->
     <div class="screen-container">
-        <!-- FIXED DEFAULT CONTENT: Automatically starts with the working SGPC Live Stream link on page load -->
+        <!-- FIXED DEFAULT CONTENT: Automatically starts playing on page load -->
         <iframe id="display-viewport" src="https://youtube.com" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
 
-    <!-- LOWER SCROLL VIEWABLE GRID COMPONENT -->
+    <!-- LOWER SCROLL ZONE -->
     <div class="scrollable-channels">
 
-        <!-- SECTION A: CHANNELS PLAYING DIRECTLY INSIDE APP STAGE -->
         <div class="category-title">📺 Native Live Streams (Plays Above)</div>
         <div class="grid">
-            <!-- FIXED LINK ROUTING: Mapped to verified permanent YouTube broadcast codes -->
+            <!-- SOLE STREAM CONTROL ENGINE BUTTON -->
             <button class="btn btn-yt" onclick="playVideoID('Z2sYgY28STk')">✨ SGPC Live</button>
-            <button class="btn btn-yt" onclick="playChannelLive('UCHJW1_0oPzYZl89wX_jhrgA')">🎵 PTC Punjabi</button>
-            <button class="btn btn-yt" onclick="playChannelLive('UCqhnX4jA0A5paNd1v-zEysw')">🇬🇧 Sky News</button>
-            <button class="btn btn-yt" onclick="playChannelLive('UCNye-wNBqNL5ZzHSJj3l8Bg')">🌍 Al Jazeera</button>
-        </div>
-
-        <!-- SECTION B: IPTV LINKS THAT REDIRECT INTO EXTERNAL VLC APP -->
-        <div class="category-title">🧡 Public IPTV (Launches VLC Directly)</div>
-        <div class="grid">
-            <!-- FIXED LINK ROUTING: Added direct m3u8 addresses inside your VLC target buttons -->
-            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇮🇳 NDTV India</button>
-            <button class="btn btn-vlc" onclick="playInVLC('https://cloudfront.net')">📰 ABP News</button>
-            <button class="btn btn-vlc" onclick="playInVLC('https://b-cdn.net')">🚀 Test Live TV</button>
-            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇮🇳 DD News</button>
         </div>
 
     </div>
@@ -119,20 +106,9 @@
     <script>
         const webView = document.getElementById('display-viewport');
 
-        // ROUTER 1: Specifically loads verified, single direct Video ID streams like SGPC
+        // ROUTER: Loads the verified direct Video ID stream directly into your frame layout above
         function playVideoID(youtubeVideoId) {
-            webView.src = "https://www.youtube.com/embed/" + youtubeVideoId + "?autoplay=1&mute=0&rel=0";
-        }
-
-        // ROUTER 2: Fixes empty paths by formatting the correct YouTube embed channel live crawl endpoint 
-        // to cleanly work on Vercel hosting environments without security blocking errors
-        function playChannelLive(youtubeChannelId) {
-            webView.src = "https://youtube.com" + youtubeChannelId + "&autoplay=1&mute=0&rel=0";
-        }
-
-        // MODULE 2: Simple VLC Protocol stream sender.
-        function playInVLC(rawStreamUrl) {
-            window.location.href = "vlc://" + rawStreamUrl;
+            webView.src = "https://youtube.com" + youtubeVideoId + "?autoplay=1&mute=0&rel=0";
         }
     </script>
 
