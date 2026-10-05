@@ -3,113 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NZ Free TV Controller</title>
+    <title>Global IPTV Dashboard</title>
     <style>
+        :root {
+            --bg-color: #121212;
+            --card-color: #1e1e1e;
+            --accent-color: #00adb5;
+            --text-color: #eeeeee;
+        }
         body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 15px;
-            background-color: #121212;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        h2 { font-size: 20px; margin-bottom: 5px; color: #007aff; }
-        p { color: #8e8e93; font-size: 14px; margin-top: 0; margin-bottom: 15px; }
-        
-        /* The player frame layout sizing */
-        .player-frame-wrapper {
+        .container {
             width: 100%;
             max-width: 800px;
-            aspect-ratio: 16 / 9;
+        }
+        .frame-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* Fixed 16:9 Aspect Ratio */
             background: #000;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             margin-bottom: 20px;
-            border: 1px solid #2c2c2e;
         }
-        iframe {
+        .frame-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             border: none;
         }
-
-        /* Channel grid selection cards */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 12px;
-            max-width: 800px;
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
         }
-        .card {
-            background: #1c1c1e;
-            border: 1px solid #2c2c2e;
+        select {
+            flex: 1;
+            padding: 12px;
+            background-color: var(--card-color);
+            color: var(--text-color);
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+        }
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .channel-card {
+            background-color: var(--card-color);
+            border: 1px solid #2d2d2d;
+            border-radius: 6px;
             padding: 15px 10px;
-            border-radius: 8px;
             text-align: center;
             cursor: pointer;
-            font-weight: 600;
             font-size: 14px;
-            transition: transform 0.2s, background 0.2s;
+            font-weight: 500;
+            transition: transform 0.1s, border-color 0.2s;
+            word-wrap: break-word;
         }
-        .card:hover {
-            background: #2c2c2e;
-            transform: translateY(-2px);
-            border-color: #007aff;
-        }
-        .card.active {
-            background: #007aff;
-            color: #fff;
-            border-color: #0a84ff;
+        .channel-card:hover, .channel-card:active {
+            border-color: var(--accent-color);
+            transform: scale(1.02);
         }
     </style>
 </head>
 <body>
 
-    <h2>NZ Free TV Controller</h2>
-    <p>Tap a channel card below to load the live broadcast inside the standalone frame frame.</p>
-
-    <!-- Isolated Player Frame -->
-    <div class="player-frame-wrapper">
-        <iframe id="playerFrame" src="player.html" allow="autoplay; fullscreen"></iframe>
+<div class="container">
+    <!-- Shared Viewport Frame Hub -->
+    <div class="frame-container">
+        <iframe id="mainViewer" src="player.html" allow="autoplay; fullscreen"></iframe>
     </div>
 
-    <!-- Modifiable Station List -->
-    <div class="grid">
-        <div class="card" onclick="changeChannel(this, 'https://play.itv.com/live/itv1', 'TVNZ 1 Alternative')">TVNZ 1</div>
-        <div class="card" onclick="changeChannel(this, 'https://bpa-live.example.com/stream2/index.m3u8', 'TVNZ 2 Demo')">TVNZ 2</div>
-        <div class="card" onclick="changeChannel(this, 'https://bpa-live.example.com/stream3/index.m3u8', 'Three Live')">Three Now</div>
-        <div class="card" onclick="changeChannel(this, 'https://bpa-live.example.com/stream4/index.m3u8', 'Whakaata Māori')">Māori TV</div>
-        <div class="card" onclick="changeChannel(this, 'https://bpa-live.example.com/stream5/index.m3u8', 'Rush Music')">Rush</div>
+    <!-- Category Dropdown Picker -->
+    <div class="controls">
+        <select id="categorySelector" onchange="filterCategory()">
+            <option value="all">🌐 All Channels</option>
+            <option value="live">📺 Live Streams (YouTube / SGPC)</option>
+            <option value="nz">🇳🇿 IPTV New Zealand</option>
+            <option value="india">🇮🇳 IPTV India</option>
+        </select>
     </div>
 
-    <script>
-        function changeChannel(element, streamUrl, channelName) {
-            // Update Active UI State
-            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-            element.classList.add('active');
+    <!-- Channel Cards Output List -->
+    <div id="channelGrid" class="channel-grid"></div>
+</div>
 
-            // Send URL and Details directly to the embedded player
-            const iframe = document.getElementById('playerFrame');
-            if (iframe.contentWindow) {
-                // Method 1: Direct function execution across same origin
-                try {
-                    iframe.contentWindow.loadStream(streamUrl, channelName);
-                } catch(e) {
-                    // Method 2: Safe postMessage fallback for absolute isolation cross-origin
-                    iframe.contentWindow.postMessage({
-                        type: "LOAD_STREAM",
-                        url: streamUrl,
-                        name: channelName
-                    }, "*");
-                }
+<script>
+    // Managed Multi-Link Database Configuration
+    const channels = [
+        { 
+            name: "🪔 SGPC Amritsar Live", 
+            category: "live", 
+            type: "youtube",
+            // Priority 1: Direct fallback embedded layout player URL
+            url1: "https://youtube.com", 
+            // Priority 2: Alternative backup layout link wrapper
+            url2: "https://youtube.com" 
+        },
+        { 
+            name: "🔴 Sky News Live", 
+            category: "live", 
+            type: "youtube",
+            url1: "https://youtube.com",
+            url2: "https://youtube.com"
+        },
+        { 
+            name: "🇳🇿 TVNZ 1 (IPTV)", 
+            category: "nz", 
+            type: "m3u8",
+            url1: "https://githubusercontent.com", 
+            url2: "https://iptv-org.github.io/iptv/countries/nz.m3u" 
+        },
+        { 
+            name: "🇳🇿 Three (IPTV)", 
+            category: "nz", 
+            type: "m3u8",
+            url1: "https://iptv-org.github.io/iptv/countries/nz.m3u",
+            url2: "https://githubusercontent.com"
+        },
+        { 
+            name: "🇮🇳 DD National (IPTV)", 
+            category: "india", 
+            type: "m3u8",
+            url1: "https://github.io", 
+            url2: "https://githubusercontent.com" 
+        },
+        { 
+            name: "🇮🇳 Aaj Tak (IPTV)", 
+            category: "india", 
+            type: "m3u8",
+            url1: "https://github.io",
+            url2: "https://githubusercontent.com"
+        }
+    ];
+
+    const viewer = document.getElementById('mainViewer');
+    const grid = document.getElementById('channelGrid');
+
+    function renderChannels(list) {
+        grid.innerHTML = "";
+        list.forEach(chan => {
+            const card = document.createElement('div');
+            card.className = 'channel-card';
+            card.innerText = chan.name;
+            // Primary click triggers the priority link; right-click/long-press can use backup
+            card.onclick = () => loadMedia(chan.url1, chan.type);
+            card.oncontextmenu = (e) => {
+                e.preventDefault();
+                loadMedia(chan.url2, chan.type);
+            };
+            grid.appendChild(card);
+        });
+    }
+
+    function loadMedia(streamUrl, type) {
+        if (type === "youtube") {
+            // Bypass internal media engines; paint YouTube iframe cleanly
+            viewer.src = streamUrl;
+        } else {
+            // Ensure core layout environment points back to internal structural baseline player
+            if (!viewer.src.includes("player.html")) {
+                viewer.src = "player.html";
+                // Wait for document layout to mount before firing postMessage
+                viewer.onload = () => sendToPlayer(streamUrl);
+            } else {
+                sendToPlayer(streamUrl);
             }
         }
+    }
 
-        // Auto-load first channel on index layout ready
-        window.addEventListener('load', () => {
-            const firstCard = document.querySelector('.card');
-            if(firstCard) firstCard.click();
-        });
-    </script>
+    function sendToPlayer(url) {
+        viewer.contentWindow.postMessage({
+            type: "LOAD_STREAM",
+            url: url
+        }, "*");
+    }
+
+    function filterCategory() {
+        const value = document.getElementById('categorySelector').value;
+        if (value === "all") {
+            renderChannels(channels);
+        } else {
+            const filtered = channels.filter(c => c.category === value);
+            renderChannels(filtered);
+        }
+    }
+
+    // Initialize application layout display
+    renderChannels(channels);
+</script>
 </body>
 </html>
