@@ -3,231 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Core NZ TV Player</title>
+    <title>Embedded Frame Engine</title>
+    <!-- Include the streaming compilation script directly in the frame -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000000;
             overflow: hidden;
-            color: #fff;
-        }
-        .player-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
             display: flex;
-            flex-direction: column;
+            align-items: center;
             justify-content: center;
-            align-items: center;
         }
-        /* Video element wrapper */
-        .video-wrapper {
-            position: relative;
+        video, iframe {
             width: 100%;
             height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        video {
-            width: 100%;
-            height: 100%;
-            background: #000;
-            object-fit: contain;
-        }
-        /* Overlay Status Alerts */
-        .status-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.75);
-            padding: 15px 25px;
-            border-radius: 8px;
-            text-align: center;
-            display: none;
-            z-index: 10;
-            pointer-events: none;
-            border: 1px solid #333;
-        }
-        .spinner {
-            border: 4px solid rgba(255,255,255,0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #007aff;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Control Overlay */
-        .controls-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.85));
-            padding: 20px 15px 15px 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 5;
-        }
-        .player-container:hover .controls-bar,
-        .player-container.show-controls .controls-bar {
-            opacity: 1;
-        }
-        .btn {
-            background: none;
             border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            padding: 8px 12px;
-            border-radius: 4px;
-            background: rgba(255,255,255,0.15);
-            transition: background 0.2s;
         }
-        .btn:hover { background: rgba(255,255,255,0.3); }
-        .channel-title {
-            flex-grow: 1;
+        .hidden { display: none !important; }
+        .placeholder {
+            color: #55556b;
+            font-family: sans-serif;
             font-size: 16px;
-            font-weight: 500;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            text-align: center;
         }
     </style>
-    <!-- Include HLS.js for streaming compatibility on Android/M3U8 -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
 </head>
 <body>
 
-<div class="player-container" id="playerContainer">
-    <div class="video-wrapper">
-        <video id="videoPlayer" controls playsinline></video>
-        
-        <div class="status-overlay" id="statusOverlay">
-            <div class="spinner" id="statusSpinner"></div>
-            <div id="statusText">Loading Stream...</div>
-        </div>
-    </div>
-
-    <!-- UI Feature Bar overlaying the frame -->
-    <div class="controls-bar">
-        <button class="btn" id="playPauseBtn">Pause</button>
-        <div class="channel-title" id="displayChannelName">No Stream Loaded</div>
-        <button class="btn" id="reloadBtn">Reload</button>
-    </div>
-</div>
+    <div id="statusText" class="placeholder">Awaiting link configuration from dashboard...</div>
+    <video id="videoEngine" controls autoplay playsinline class="hidden"></video>
+    <div id="youtubeWrapper" class="hidden" style="width:100%; height:100%;"></div>
 
 <script>
-    const video = document.getElementById('videoPlayer');
-    const statusOverlay = document.getElementById('statusOverlay');
+    const video = document.getElementById('videoEngine');
+    const ytWrapper = document.getElementById('youtubeWrapper');
     const statusText = document.getElementById('statusText');
-    const statusSpinner = document.getElementById('statusSpinner');
-    const displayChannelName = document.getElementById('displayChannelName');
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    const reloadBtn = document.getElementById('reloadBtn');
-    const playerContainer = document.getElementById('playerContainer');
-    
-    let hls = null;
-    let currentStreamUrl = "";
-    let controlsTimeout;
+    let hlsEngine = null;
 
-    // Show status utility
-    function showStatus(text, showSpinner = true) {
-        statusText.innerText = text;
-        statusSpinner.style.display = showSpinner ? 'block' : 'none';
-        statusOverlay.style.display = 'block';
-    }
-
-    function hideStatus() {
-        statusOverlay.style.display = 'none';
-    }
-
-    // Direct interface function called from parent index.html window/iframe context
-    window.loadStream = function(url, name) {
-        if (!url) return;
-        currentStreamUrl = url;
-        displayChannelName.innerText = name || "Live Channel";
-        showStatus("Loading: " + (name || "Stream") + "...");
-        
-        // Reset existing HLS instance
-        if (hls) {
-            hls.destroy();
-            hls = null;
+    function clearFrame() {
+        if (hlsEngine) {
+            hlsEngine.destroy();
+            hlsEngine = null;
         }
-
-        if (Hls.isSupported()) {
-            hls = new Hls({
-                maxBufferLength: 10,
-                enableWorker: true,
-                lowLatencyMode: true
-            });
-            hls.loadSource(url);
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                video.play().catch(() => {
-                    showStatus("Tap Play to Watch", false);
-                });
-            });
-            hls.on(Hls.Events.ERROR, function(event, data) {
-                if (data.fatal) {
-                    showStatus("Stream Error. Retrying...", true);
-                    hls.recoverMediaError();
-                }
-            });
-        } 
-        // Native fallback (iOS / Safari / some older Android engines)
-        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = url;
-            video.addEventListener('loadedmetadata', function() {
-                video.play().catch(() => {
-                    showStatus("Tap Play to Watch", false);
-                });
-            });
-        } else {
-            showStatus("Streaming not supported on this browser.", false);
-        }
-    };
-
-    // Video Event Handlers for Status Screen
-    video.addEventListener('waiting', () => showStatus("Buffering..."));
-    video.addEventListener('playing', () => { hideStatus(); playPauseBtn.innerText = "Pause"; });
-    video.addEventListener('pause', () => playPauseBtn.innerText = "Play");
-
-    // Feature Controls UI Interaction
-    playPauseBtn.addEventListener('click', () => {
-        if (video.paused) video.play();
-        else video.pause();
-    });
-
-    reloadBtn.addEventListener('click', () => {
-        if (currentStreamUrl) window.loadStream(currentStreamUrl, displayChannelName.innerText);
-    });
-
-    // Handle Mobile tap to reveal controls
-    function triggerControls() {
-        playerContainer.classList.add('show-controls');
-        clearTimeout(controlsTimeout);
-        controlsTimeout = setTimeout(() => {
-            playerContainer.classList.remove('show-controls');
-        }, 3000);
+        video.src = "";
+        video.classList.add('hidden');
+        ytWrapper.innerHTML = "";
+        ytWrapper.classList.add('hidden');
+        statusText.classList.add('hidden');
     }
-    playerContainer.addEventListener('click', triggerControls);
-    playerContainer.addEventListener('touchstart', triggerControls);
 
-    // Listen for commands posted via postMessage if running across strict domains
+    // Communication bridge listener
     window.addEventListener("message", function(event) {
-        if (event.data && event.data.type === "LOAD_STREAM") {
-            window.loadStream(event.data.url, event.data.name);
+        const command = event.data;
+        if (command.type === "PLAY_STREAM") {
+            clearFrame();
+            
+            if (command.mediaType === "youtube") {
+                // Option 1 Path: Clear elements and generate a targeted video viewport
+                ytWrapper.classList.remove('hidden');
+                ytWrapper.innerHTML = `<iframe src="${command.url}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+            } 
+            else if (command.mediaType === "iptv") {
+                // Option 2 Path: Mount the live m3u8 decoder pipeline
+                video.classList.remove('hidden');
+                if (Hls.isSupported()) {
+                    hlsEngine = new Hls({ maxMaxBufferLength: 10 });
+                    hlsEngine.loadSource(command.url);
+                    hlsEngine.attachMedia(video);
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = command.url;
+                } else {
+                    statusText.innerText = "Error: HLS Codecs Unsupported on this platform.";
+                    statusText.classList.remove('hidden');
+                }
+            }
         }
     });
 </script>
