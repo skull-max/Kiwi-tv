@@ -1,55 +1,50 @@
 <!DOCTYPE html>
-<html lang="en-NZ">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kiwi Freeview Hub</title>
+    <title>Global Open Stream Player</title>
+    <!-- We load HLS-supported video script libraries so .m3u8 plays natively -->
+    <link href="https://zencdn.net" rel="stylesheet" />
     <style>
         body {
             background-color: #121212;
             color: #ffffff;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        h1 {
-            margin-top: 10px;
-            margin-bottom: 5px;
-            font-size: 26px;
-        }
-        p {
-            color: #888888;
+        h1 { margin-bottom: 20px; font-size: 24px; }
+        .video-box {
+            width: 100%;
+            max-width: 800px;
             margin-bottom: 25px;
-            text-align: center;
-            font-size: 14px;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
         }
-        /* Layout Grid for TV Channels */
+        .video-js { width: 100%; aspect-ratio: 16/9; }
         .grid-layout {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
+            gap: 12px;
             width: 100%;
-            max-width: 600px;
-            margin-bottom: 30px;
+            max-width: 800px;
         }
         .btn-channel {
-            background-color: #1e1e1e;
+            background-color: #242424;
             color: white;
-            border: 2px solid #333333;
-            padding: 25px 15px;
-            font-size: 16px;
+            border: 2px solid #3a3a3a;
+            padding: 20px 10px;
+            font-size: 15px;
             font-weight: bold;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        /* Distinct visual cue for third-party platforms */
-        .btn-external {
-            background-color: #1c2d42;
-            border-color: #3b5998;
+            transition: 0.1s;
         }
         .btn-channel:active {
             background-color: #0084ff;
@@ -60,27 +55,34 @@
 </head>
 <body>
 
-    <h1>🇳🇿 Kiwi Freeview Hub</h1>
-    <p>Select a source to launch streaming playback safely without browser blocks.</p>
+    <h1>🌐 Public Direct-Link Player</h1>
 
-    <!-- LIVE TV SELECTION PLATFORMS -->
-    <div class="grid-layout">
-        <!-- Official Free-to-Air web stream pages optimized for mobile browsers -->
-        <button class="btn-channel" onclick="launchStream('https://tvnz.co.nz')">TVNZ 1</button>
-        <button class="btn-channel" onclick="launchStream('https://tvnz.co.nz')">TVNZ 2</button>
-        <button class="btn-channel" onclick="launchStream('https://threenow.co.nz')">Three</button>
-        <button class="btn-channel" onclick="launchStream('https://threenow.co.nz')">Bravo</button>
-        
-        <!-- Linking your experimental alternative streaming site directly -->
-        <button class="btn-channel btn-external" onclick="launchStream('https://vidbox.vc/live-tv')">VidBox TV 🌐</button>
+    <div class="video-box">
+        <video id="live-player" class="video-js vjs-default-skin" controls preload="auto">
+            <!-- Starting default: NASA TV (A completely public, direct unblocked HLS stream) -->
+            <source src="https://akamaized.net" type="application/x-mpegURL">
+        </video>
     </div>
 
+    <div class="grid-layout">
+        <!-- These are direct streams from github.com/iptv-org that allow open web browser playback -->
+        <button class="btn-channel" onclick="tuneChannel('https://akamaized.net')">NASA TV 🚀</button>
+        <button class="btn-channel" onclick="tuneChannel('https://amagi.tv')">Red Bull TV 🏎️</button>
+        <button class="btn-channel" onclick="tuneChannel('https://akamaized.net')">CNBC Global 📈</button>
+        <button class="btn-channel" onclick="tuneChannel('https://akamaized.net')">NHK World 🇯🇵</button>
+    </div>
+
+    <script src="https://zencdn.net"></script>
     <script>
-        // JavaScript launcher script 
-        function launchStream(targetUrl) {
-            // '_blank' instructs the browser engine to deploy a clean tab 
-            // bypassing parent frame sandboxes and avoiding the sad-face block
-            window.open(targetUrl, '_blank');
+        // Initialize player engine
+        var player = videojs('live-player');
+
+        function tuneChannel(streamUrl) {
+            player.src({
+                src: streamUrl,
+                type: 'application/x-mpegURL'
+            });
+            player.play();
         }
     </script>
 </body>
