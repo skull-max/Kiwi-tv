@@ -98,6 +98,8 @@
         <div class="grid">
             <!-- FIXED LINK ROUTING: Swapped out dead video codes for permanent, unexpiring network account channels -->
             <button class="btn btn-yt" onclick="playVideoID('Qv2eRRU_56A')">✨ SGPC Live</button>
+            <!-- NEW DD INDIA BUTTON: Configured directly using the universal channel live lookup query layout -->
+            <button class="btn btn-yt" onclick="playChannelLive('UCGDQNvybfDDeGTf4GtigXaw')">📡 DD India</button>
         </div>
 
     </div>
@@ -108,13 +110,13 @@
 
         // ROUTER 1: Specifically loads verified, single direct Video ID streams like SGPC
         function playVideoID(youtubeVideoId) {
-            webView.src = "https://www.youtube.com/embed/" + youtubeVideoId + "?autoplay=1&mute=0&rel=0";
+            webView.src = "https://youtube.com" + youtubeVideoId + "?autoplay=1&mute=0&rel=0";
         }
 
         // ROUTER 2: Core fix for broken channels. Forces YouTube to dynamically crawl 
         // the network's main profile account and stream whichever video loop is live right now!
         function playChannelLive(youtubeChannelId) {
-            webView.src = "https://youtube.com" + youtubeChannelId + "&autoplay=1&mute=0&rel=0";
+            webView.src = "https://youtube.comlive_stream?channel=" + youtubeChannelId + "&autoplay=1&mute=0&rel=0";
         }
 
         // MODULE 2: Simple VLC Protocol stream sender.
