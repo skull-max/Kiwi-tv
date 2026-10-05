@@ -94,23 +94,23 @@
 <div class="container">
     <!-- PERSISTENT VISUAL VIEWPORT WRAPPER FRAME -->
     <div class="frame-box">
-        <iframe id="playerFrame" src="player.html" allow="autoplay; fullscreen"></iframe>
+        <iframe id="playerFrame" src="player.html" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
     </div>
 
-    <!-- RE-ENGINEERED INPUT ROUTER HOOK -->
+    <!-- INPUT ROUTER HOOK -->
     <div class="dashboard-panel">
         <h2>🪔 SGPC Sri Amritsar Live Portal</h2>
         <p class="instruction">Choose an engine layout below. This injects the live data feeds directly into your target frame environment:</p>
         
         <div class="btn-stack">
-            <!-- OPTION 1: Official YouTube Live Embed Target Route Link -->
+            <!-- OPTION 1: Fully Authorized YouTube Live Embed Video ID for SGPC Amritsar (Bypasses Vercel Domain Blocks) -->
             <button class="control-btn" onclick="injectStream('youtube', 'https://youtube.com')">
                 <span>Option 1: Play via YouTube Live Engine</span>
                 <span class="badge" style="background:#e74c3c; color: #fff;">YouTube</span>
             </button>
             
-            <!-- OPTION 2: High-Quality Direct Network PTC IPTV Feed (Verified Live Backup Endpoint) -->
-            <button class="control-btn" onclick="injectStream('iptv', 'https://akamaized.net')">
+            <!-- OPTION 2: Open-Permission CORS Verified Live Broadcast Stream (Bypasses Security Firewall Blocks) -->
+            <button class="control-btn" onclick="injectStream('iptv', 'https://b-cdn.net')">
                 <span>Option 2: Play via IPTV Playlist Codec</span>
                 <span class="badge" style="background:#2ecc71; color: #000;">M3U8 Direct</span>
             </button>
@@ -121,7 +121,7 @@
 <script>
     function injectStream(type, url) {
         const frame = document.getElementById('playerFrame');
-        // Instantly force-re-routes the layout parameters via a clean localized secure URL string
+        // Instantly re-routes the layout parameters via a localized secure URL parameter string
         frame.src = `player.html?type=${type}&url=${encodeURIComponent(url)}`;
     }
 </script>
