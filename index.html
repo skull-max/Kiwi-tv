@@ -3,94 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Punjabi Live TV Hub</title>
+    <title>Master TV Command Center</title>
     <style>
+        /* Base setup ensuring layout elements fill the screen without overflow */
         body {
-            background-color: #121212;
+            background-color: #0c0c0e;
             color: #ffffff;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Segoe UI', Helvetica, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 100vh;
+            box-sizing: border-box;
         }
+
         h1 {
-            margin-top: 10px;
-            margin-bottom: 5px;
-            font-size: 24px;
+            font-size: 20px;
+            margin: 5px 0 15px 0;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
-        p {
-            color: #888888;
-            margin-bottom: 25px;
-            font-size: 14px;
-        }
+
+        /* Responsive video screen section */
         .video-box {
             width: 100%;
             max-width: 800px;
-            margin-bottom: 25px;
+            aspect-ratio: 16/9;
             border-radius: 12px;
             overflow: hidden;
-            background-color: #000;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            background-color: #000000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            margin-bottom: 20px;
         }
+
         iframe {
             width: 100%;
-            aspect-ratio: 16/9;
+            height: 100%;
             border: none;
         }
-        .grid-layout {
+
+        /* STICKY BOTTOM BUTTON DOCK (Tablet Optimized) */
+        .bottom-dock {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #16161a;
+            border-top: 1px solid #282830;
+            padding: 15px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            width: 100%;
-            max-width: 800px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            z-index: 100;
         }
-        .btn-channel {
-            background-color: #1e1e1e;
+
+        .dock-btn {
             color: white;
-            border: 2px solid #333333;
-            padding: 22px 10px;
-            font-size: 15px;
+            border: 2px solid #2d2d35;
+            padding: 18px 8px;
+            font-size: 14px;
             font-weight: bold;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.1s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.15s ease;
         }
-        /* Devotional button accent color styling */
-        .btn-devotional {
-            background-color: #3d2a04;
-            border-color: #ff9900;
-        }
-        .btn-channel:active {
-            background-color: #ff0000;
-            border-color: #ffffff;
-            transform: scale(0.95);
+
+        /* Custom color assignments separating your layout groups */
+        .btn-youtube { background-color: #241416; border-color: #7a1f24; }
+        .btn-web { background-color: #141c24; border-color: #1f4e7a; }
+        .btn-apk { background-color: #142416; border-color: #1f7a2b; }
+
+        /* Smooth mechanical shrink when pressed with your finger */
+        .dock-btn:active {
+            transform: scale(0.92);
+            filter: brightness(1.3);
         }
     </style>
 </head>
 <body>
 
-    <h1>📺 Punjabi Live TV Hub</h1>
-    <p>Tap a channel layout below to tune the live feed player automatically.</p>
+    <h1>🎮 Media Command Center</h1>
 
+    <!-- CENTRAL MONITOR DISPLAY -->
     <div class="video-box">
-        <!-- Defaulting to SGPC Live Amritsar on launch screen -->
-        <iframe id="youtube-screen" src="https://youtube.com" allowfullscreen allow="autoplay"></iframe>
+        <!-- System automatically boots onto the SGPC Amritsar Live Stream layout -->
+        <iframe id="main-monitor" src="https://youtube.com" allowfullscreen allow="autoplay"></iframe>
     </div>
 
-    <div class="grid-layout">
-        <!-- JavaScript functions parse the active channel IDs when pressed -->
-        <button class="btn-channel btn-devotional" onclick="tuneYouTube('UCLXp8k_A3_kS08v_MvUo_pQ')">SGPC Live ✨</button>
-        <button class="btn-channel" onclick="tuneYouTube('UCHJW1_0oPzYZl89wX_jhrgA')">PTC Punjabi 🎵</button>
-        <button class="btn-channel" onclick="tuneYouTube('UCYF_LfBBxkFBEgaSCNrqW3w')">Zee Punjabi 🎭</button>
+    <!-- THE CONSOLIDATED FIXED BOTTOM NAVIGATION CONTROLS -->
+    <div class="bottom-dock">
+        
+        <!-- COLUMN 1: YOUTUBE DIRECT STREAMS -->
+        <button class="dock-btn btn-youtube" onclick="loadYoutube('UCLXp8k_A3_kS08v_MvUo_pQ')">
+            <span>✨</span> SGPC Live
+        </button>
+        <button class="dock-btn btn-youtube" onclick="loadYoutube('UCHJW1_0oPzYZl89wX_jhrgA')">
+            <span>🎵</span> PTC Punjabi
+        </button>
+
+        <!-- COLUMN 2: EXTERNAL FREE STREAM SITES -->
+        <button class="dock-btn btn-web" onclick="loadExternal('https://vidbox.vc')">
+            <span>🌐</span> VidBox Live
+        </button>
+
+        <!-- COLUMN 3: SYSTEM APP SHORTCUT LAUNCHERS -->
+        <!-- These tell your Android operating system to wake up installed software apps directly -->
+        <button class="dock-btn btn-apk" onclick="loadExternal('intent://#Intent;scheme=android-app;package=nz.co.dishtv.FreeviewLiveTV;end')">
+            <span>📺</span> Matt's Freeview
+        </button>
+        <button class="dock-btn btn-apk" onclick="loadExternal('intent://#Intent;scheme=android-app;package=com.google.android.youtube;end')">
+            <span>🔴</span> Open YouTube
+        </button>
+
     </div>
 
     <script>
-        // Controller function updates the frame viewport source smoothly 
-        function tuneYouTube(channelId) {
-            var newEmbedUrl = "https://youtube.com" + channelId + "&autoplay=1";
-            document.getElementById('youtube-screen').src = newEmbedUrl;
+        var monitor = document.getElementById('main-monitor');
+
+        // Changes the video feed right inside your embedded app player box
+        function loadYoutube(channelId) {
+            monitor.src = "https://youtube.com" + channelId + "&autoplay=1";
+        }
+
+        // Breaks out to open external webpages or system APK intents safely
+        function loadExternal(url) {
+            window.open(url, '_blank');
         }
     </script>
 </body>
