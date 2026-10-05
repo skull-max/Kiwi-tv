@@ -3,43 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Live TV Portal</title>
-    <!-- Include the video engine library directly in this file to prevent loading lag -->
+    <title>Fail-Safe Live TV Portal</title>
+    <!-- Built-in HLS.js streaming decoder -->
     <script src="https://jsdelivr.net"></script>
     <style>
+        :root {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --accent: #00adb5;
+            --text: #ffffff;
+        }
         body {
-            font-family: sans-serif;
-            background-color: #121212;
-            color: #ffffff;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
             padding: 15px;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .wrapper {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        .video-box {
+        .container {
             width: 100%;
+            max-width: 650px;
+        }
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
             background: #000;
             border-radius: 8px;
             margin-bottom: 15px;
-            aspect-ratio: 16/9;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
         video {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             border-radius: 8px;
         }
+        .error-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(30,30,30,0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            border-radius: 8px;
+        }
+        .error-overlay a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #ff0000;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
         select {
             width: 100%;
             padding: 12px;
-            background: #222;
-            color: #fff;
-            border: 1px solid #444;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid #333;
             border-radius: 6px;
             font-size: 16px;
             margin-bottom: 15px;
+            outline: none;
         }
         .grid {
             display: grid;
@@ -47,75 +87,111 @@
             gap: 10px;
         }
         .card {
-            background: #1e1e1e;
-            padding: 15px 5px;
+            background: var(--surface);
+            padding: 15px 10px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
-            border: 1px solid #333;
+            text-align: center;
+            border: 1px solid #2d2d2d;
+            transition: background 0.2s;
         }
         .card:active {
-            background: #00adb5;
+            background: var(--accent);
         }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="wrapper">
-    <!-- Clean Local Video Engine Player Element -->
-    <div id="playerContainer" class="video-box">
-        <video id="videoPlayer" controls autoplay playsinline></video>
+<div class="container">
+    <!-- Clean Local Decoding Engine Viewport -->
+    <div class="video-wrapper">
+        <video id="tvPlayer" controls autoplay playsinline></video>
+        <div id="overlay" class="error-overlay hidden">
+            <span id="errorMsg">Select a channel below to watch</span>
+            <a id="externalLink" href="#" target="_blank" class="hidden">Open in External App</a>
+        </div>
     </div>
 
-    <!-- Dropdown Selector -->
-    <select id="menu" onchange="switchCategory()">
+    <!-- Category Dropdown Filter -->
+    <select id="categoryFilter" onchange="filterGrid()">
         <option value="all">🌐 View All Channels</option>
         <option value="nz">🇳🇿 New Zealand Channels</option>
-        <option value="india">🇮🇳 India Channels</option>
+        <option value="india">🇮🇳 Indian & Live Streams</option>
     </select>
 
-    <!-- Channel Cards Grid -->
-    <div id="channelGrid" class="grid">
-        <!-- SGPC Live Stream -->
-        <div class="card" data-cat="india" onclick="playYouTube('https://youtube.com')">🪔 SGPC Amritsar Live</div>
-        
-        <!-- Live NZ TV stream points (Direct m3u8 codecs from Matt Huisman public index) -->
-        <div class="card" data-cat="nz" onclick="playM3U8('https://cloudfront.net')">🇳🇿 TVNZ 1</div>
-        <div class="card" data-cat="nz" onclick="playM3U8('https://duoak7vltfob0.cloudfront.net/v1/master/b1f4432f8f95be9e629d97baabfed15b8cacd1f8/TVNZ_2/master.m3u8')">🇳🇿 TVNZ 2</div>
-        
-        <!-- Verified Indian Public Streams -->
-        <div class="card" data-cat="india" onclick="playM3U8('https://akamaized.net')">🇮🇳 DD News Live</div>
+    <!-- Channels List Grid -->
+    <div id="channelsGrid" class="grid">
+        <!-- YouTube Live Streams (Forced External App Redirection to Bypass local sandbox errors) -->
+        <div class="card" data-cat="india" onclick="loadYouTube('https://youtube.com')">🪔 SGPC Amritsar Live</div>
+        <div class="card" data-cat="india" onclick="loadYouTube('https://youtube.com')">🔴 Sky News Live</div>
+
+        <!-- Direct Broadcast IPTV HLS Links (Decoded natively via HLS.js script) -->
+        <div class="card" data-cat="nz" onclick="loadHLS('https://cloudfront.net')">🇳🇿 TVNZ 1</div>
+        <div class="card" data-cat="nz" onclick="loadHLS('https://cloudfront.net')">🇳🇿 TVNZ 2</div>
+        <div class="card" data-cat="india" onclick="loadHLS('https://akamaized.net')">🇮🇳 DD News Live</div>
     </div>
 </div>
 
 <script>
-    const video = document.getElementById('videoPlayer');
-    const hls = new Hls();
+    const video = document.getElementById('tvPlayer');
+    const overlay = document.getElementById('overlay');
+    const errorMsg = document.getElementById('errorMsg');
+    const externalLink = document.getElementById('externalLink');
+    let hlsEngine = null;
 
-    function playM3U8(url) {
-        // If switching from YouTube, ensure player interface defaults are restored
-        document.getElementById('playerContainer').innerHTML = '<video id="videoPlayer" controls autoplay playsinline></video>';
-        const newVideo = document.getElementById('videoPlayer');
-        
+    function resetPlayer() {
+        if (hlsEngine) {
+            hlsEngine.destroy();
+            hlsEngine = null;
+        }
+        video.src = "";
+        video.classList.add('hidden');
+        overlay.classList.add('hidden');
+        externalLink.classList.add('hidden');
+    }
+
+    // Handles Direct TV feeds (.m3u8 video extensions)
+    function loadHLS(streamUrl) {
+        resetPlayer();
+        video.classList.remove('hidden');
+
         if (Hls.isSupported()) {
-            hls.loadSource(url);
-            hls.attachMedia(newVideo);
-        } else if (newVideo.canPlayType('application/vnd.apple.mpegurl')) {
-            newVideo.src = url;
+            hlsEngine = new Hls({ maxMaxBufferLength: 10 });
+            hlsEngine.loadSource(streamUrl);
+            hlsEngine.attachMedia(video);
+            
+            // Catch failing or region-locked IPTV streams
+            hlsEngine.on(Hls.Events.ERROR, function (event, data) {
+                if (data.fatal) {
+                    showError("Stream offline or blockaded by geographic firewall.");
+                }
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = streamUrl;
+        } else {
+            showError("Your tablet browser does not support HLS stream playbacks.");
         }
     }
 
-    function playYouTube(embedUrl) {
-        // Swap out the video engine block natively to prevent the "Sad Face" frame crash
-        document.getElementById('playerContainer').innerHTML = 
-            `<iframe width="100%" height="100%" src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen style="border-radius:8px;"></iframe>`;
+    // Handles YouTube Live (Guarantees no iframe errors)
+    function loadYouTube(targetUrl) {
+        resetPlayer();
+        showError("To bypass tablet browser security limitations, launch this live stream in your dedicated application container:");
+        externalLink.href = targetUrl;
+        externalLink.classList.remove('hidden');
     }
 
-    function switchCategory() {
-        const selected = document.getElementById('menu').value;
+    function showError(message) {
+        video.classList.add('hidden');
+        overlay.classList.remove('hidden');
+        errorMsg.innerText = message;
+    }
+
+    function filterGrid() {
+        const selected = document.getElementById('categoryFilter').value;
         const cards = document.querySelectorAll('.card');
-        
         cards.forEach(card => {
             if (selected === 'all' || card.getAttribute('data-cat') === selected) {
                 card.classList.remove('hidden');
@@ -124,6 +200,9 @@
             }
         });
     }
+
+    // Default setup state message
+    showError("Tap any channel card below to begin playing.");
 </script>
 
 </body>
