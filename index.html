@@ -3,21 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Open Stream Player</title>
-    <!-- We load HLS-supported video script libraries so .m3u8 plays natively -->
-    <link href="https://zencdn.net" rel="stylesheet" />
+    <title>Punjabi Live TV Hub</title>
     <style>
         body {
             background-color: #121212;
             color: #ffffff;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        h1 { margin-bottom: 20px; font-size: 24px; }
+        h1 {
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+        p {
+            color: #888888;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
         .video-box {
             width: 100%;
             max-width: 800px;
@@ -27,27 +34,36 @@
             background-color: #000;
             box-shadow: 0 10px 30px rgba(0,0,0,0.7);
         }
-        .video-js { width: 100%; aspect-ratio: 16/9; }
+        iframe {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border: none;
+        }
         .grid-layout {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 12px;
             width: 100%;
             max-width: 800px;
         }
         .btn-channel {
-            background-color: #242424;
+            background-color: #1e1e1e;
             color: white;
-            border: 2px solid #3a3a3a;
-            padding: 20px 10px;
+            border: 2px solid #333333;
+            padding: 22px 10px;
             font-size: 15px;
             font-weight: bold;
             border-radius: 10px;
             cursor: pointer;
-            transition: 0.1s;
+            transition: all 0.1s ease;
+        }
+        /* Devotional button accent color styling */
+        .btn-devotional {
+            background-color: #3d2a04;
+            border-color: #ff9900;
         }
         .btn-channel:active {
-            background-color: #0084ff;
+            background-color: #ff0000;
             border-color: #ffffff;
             transform: scale(0.95);
         }
@@ -55,34 +71,26 @@
 </head>
 <body>
 
-    <h1>🌐 Public Direct-Link Player</h1>
+    <h1>📺 Punjabi Live TV Hub</h1>
+    <p>Tap a channel layout below to tune the live feed player automatically.</p>
 
     <div class="video-box">
-        <video id="live-player" class="video-js vjs-default-skin" controls preload="auto">
-            <!-- Starting default: NASA TV (A completely public, direct unblocked HLS stream) -->
-            <source src="https://akamaized.net" type="application/x-mpegURL">
-        </video>
+        <!-- Defaulting to SGPC Live Amritsar on launch screen -->
+        <iframe id="youtube-screen" src="https://youtube.com" allowfullscreen allow="autoplay"></iframe>
     </div>
 
     <div class="grid-layout">
-        <!-- These are direct streams from github.com/iptv-org that allow open web browser playback -->
-        <button class="btn-channel" onclick="tuneChannel('https://akamaized.net')">NASA TV 🚀</button>
-        <button class="btn-channel" onclick="tuneChannel('https://amagi.tv')">Red Bull TV 🏎️</button>
-        <button class="btn-channel" onclick="tuneChannel('https://akamaized.net')">CNBC Global 📈</button>
-        <button class="btn-channel" onclick="tuneChannel('https://akamaized.net')">NHK World 🇯🇵</button>
+        <!-- JavaScript functions parse the active channel IDs when pressed -->
+        <button class="btn-channel btn-devotional" onclick="tuneYouTube('UCLXp8k_A3_kS08v_MvUo_pQ')">SGPC Live ✨</button>
+        <button class="btn-channel" onclick="tuneYouTube('UCHJW1_0oPzYZl89wX_jhrgA')">PTC Punjabi 🎵</button>
+        <button class="btn-channel" onclick="tuneYouTube('UCYF_LfBBxkFBEgaSCNrqW3w')">Zee Punjabi 🎭</button>
     </div>
 
-    <script src="https://zencdn.net"></script>
     <script>
-        // Initialize player engine
-        var player = videojs('live-player');
-
-        function tuneChannel(streamUrl) {
-            player.src({
-                src: streamUrl,
-                type: 'application/x-mpegURL'
-            });
-            player.play();
+        // Controller function updates the frame viewport source smoothly 
+        function tuneYouTube(channelId) {
+            var newEmbedUrl = "https://youtube.com" + channelId + "&autoplay=1";
+            document.getElementById('youtube-screen').src = newEmbedUrl;
         }
     </script>
 </body>
