@@ -2,49 +2,38 @@
 <html lang="en-NZ">
 <head>
     <meta charset="UTF-8">
-    <!-- This tag prevents text from looking tiny on tablet screens -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kiwi Freeview Player</title>
-    
-    <!-- 1. VideoJS Library: Standard HTML5 video cannot read live TV streams (.m3u8 files). 
-         We pull this library from a free server to handle the live NZ video feeds safely. -->
-    <link href="https://zencdn.net" rel="stylesheet" />
-
-    <!-- 2. CSS STYLING: This shapes our tablet layout -->
+    <title>Kiwi Freeview Hub</title>
     <style>
         body {
-            background-color: #121212; /* Dark mode background */
+            background-color: #121212;
             color: #ffffff;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-
         h1 {
             margin-bottom: 20px;
             font-size: 24px;
-            letter-spacing: 1px;
         }
-
-        /* Container keeping our video player centered and sharp */
+        /* The Video Container Box */
         .video-box {
             width: 100%;
             max-width: 800px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 25px;
             border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 25px;
+            background-color: #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
         }
-
-        .video-js {
+        iframe {
             width: 100%;
-            aspect-ratio: 16/9; /* Perfect widescreen layout */
+            aspect-ratio: 16/9;
+            border: none;
         }
-
-        /* Grid layout for your channel buttons */
         .grid-layout {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -52,21 +41,17 @@
             width: 100%;
             max-width: 800px;
         }
-
-        /* Large, tablet touch-friendly button layouts */
         .btn-channel {
             background-color: #242424;
             color: white;
             border: 2px solid #3a3a3a;
             padding: 20px 10px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: bold;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
+            transition: 0.1s;
         }
-
-        /* Visual reaction when your finger taps the button */
         .btn-channel:active {
             background-color: #0084ff;
             border-color: #ffffff;
@@ -78,38 +63,29 @@
 
     <h1>🇳🇿 Kiwi Freeview Hub</h1>
 
-    <!-- THE VIDEO PLAYER COMPONENT -->
+    <!-- 
+      Instead of using a raw video tag which mobile browsers block, 
+      we use an 'iframe' windows container. This acts as an embedded 
+      mini-browser that loads the video streams completely naturally.
+    -->
     <div class="video-box">
-        <video id="tv-screen" class="video-js vjs-default-skin" controls preload="auto" autocomplete="off">
-            <!-- Defaulting to TVNZ 1 on launch -->
-            <source src="https://mjh.nz" type="application/x-mpegURL">
-        </video>
+        <iframe id="tv-screen" src="https://threenow.co.nz" allowfullscreen allow="autoplay"></iframe>
     </div>
 
-    <!-- THE CHANNEL SELECTION BUTTONS -->
     <div class="grid-layout">
-        <!-- Clicking a button triggers our JavaScript function down below -->
-        <button class="btn-channel" onclick="tuneChannel('https://i.mjh.nz/nz/tv')">TVNZ 1</button>
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">TVNZ 2</button>
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Duke</button>
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Three</button>
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Bravo</button>
-        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Whakaata Māori</button>
+        <!-- We use touch-friendly web streaming layouts optimized for browser windows -->
+        <button class="btn-channel" onclick="tuneChannel('https://tvnz.co.nz')">TVNZ 1</button>
+        <button class="btn-channel" onclick="tuneChannel('https://tvnz.co.nz')">TVNZ 2</button>
+        <button class="btn-channel" onclick="tuneChannel('https://tvnz.co.nz')">Duke</button>
+        <button class="btn-channel" onclick="tuneChannel('https://threenow.co.nz')">Three</button>
+        <button class="btn-channel" onclick="tuneChannel('https://threenow.co.nz')">Bravo</button>
+        <button class="btn-channel" onclick="tuneChannel('https://threenow.co.nz')">Eden</button>
     </div>
 
-    <!-- 3. JAVASCRIPT LOGIC: The brain engine -->
-    <script src="https://zencdn.net"></script>
     <script>
-        // Initialize the VideoJS engine on our "tv-screen" element
-        var liveViewer = videojs('tv-screen');
-
-        // This function intercepts the stream URL when a button is clicked
-        function tuneChannel(streamUrl) {
-            liveViewer.src({
-                src: streamUrl,
-                type: 'application/x-mpegURL'
-            });
-            liveViewer.play(); // Auto-start the video playback
+        // Simple JavaScript controller to swap the iframe target source
+        function tuneChannel(webUrl) {
+            document.getElementById('tv-screen').src = webUrl;
         }
     </script>
 </body>
