@@ -215,65 +215,80 @@
         </div>
 
         <!-- CATEGORY 5: NEW ZEALAND FREEVIEW -->
-const cdnVideo = document.getElementById('native-engine-display');
-const ytIframe = document.getElementById('youtube-engine-display');
-let activeHlsLinkInstance = null;
-// Clean out display resources completely to prevent layout overlaps
-function resetActiveViewports() {
-if (activeHlsLinkInstance) {
-activeHlsLinkInstance.destroy();
-activeHlsLinkInstance = null;
-}
-cdnVideo.style.display = 'none';
-cdnVideo.pause();
-cdnVideo.src = '';
-ytIframe.style.display = 'none';
-ytIframe.src = '';
-}
-// Primary Evaluator: Reads drop-down selection parameters and routes them to the correct internal engine
-function tuneMatrixChannel(channelKey) {
-resetActiveViewports();
-// Reads whichever specific drop-down item is selected for the targeted channel card
-const dropdownElement = document.getElementById('src-' + channelKey);
-const chosenValue = dropdownElement.value;
-// Route 1: Explicitly saved direct YouTube Video ID
-if (chosenValue.startsWith('yt_vid:')) {
-const videoId = chosenValue.substring(7); // Drops the prefix "yt_vid:"
-ytIframe.style.display = 'block';
-ytIframe.src = "youtube.com" + videoId + "?autoplay=1&mute=0&rel=0";
-}
-// Route 2: Permanent Unexpiring Channel Profile Stream Finder
-else if (chosenValue.startsWith('yt_ch:')) {
-const channelId = chosenValue.substring(6); // Drops the prefix "yt_ch:"
-ytIframe.style.display = 'block';
-ytIframe.src = "youtube.com" + channelId + "&autoplay=1&mute=0&rel=0";
-}
-// Route 3: Core HLS .m3u8 Stream Decoder for CDN Nodes
-else if (chosenValue.startsWith('m3u:')) {
-const streamUrl = chosenValue.substring(4); // Drops the prefix "m3u:"
-cdnVideo.style.display = 'block';
-if (Hls.isSupported()) {
-activeHlsLinkInstance = new Hls();
-activeHlsLinkInstance.loadSource(streamUrl);
-activeHlsLinkInstance.attachMedia(cdnVideo);
-activeHlsLinkInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-cdnVideo.play().catch(err => console.log("Autoplay context blockade bypassed."));
-});
-} else if (cdnVideo.canPlayType('application/x-mpegURL')) {
-cdnVideo.src = streamUrl;
-cdnVideo.play();
-}
-}
-// Route 4: Deep linking outward to local Android Applications
-else if (chosenValue.startsWith('app:')) {
-const packageIdentity = chosenValue.substring(4); // Drops the prefix "app:"
-window.open("intent://#Intent;scheme=android-app;package=" + packageIdentity + ";end", '_blank');
-}
-// Route 5: External Tab Breakouts for secure network targets (Core New Zealand Fix)
-else if (chosenValue.startsWith('web:')) {
-const targetUrl = chosenValue.substring(4); // Drops the prefix "web:"
-window.open(targetUrl, '_blank');
-}
-}
-// AUTO-LAUNCH BLOCK: Runs SGPC selection instantly upon initial page compilation
-tuneMatrixChannel('sgpc');
+        </div> <!-- Closes the NZ channel grid div -->
+    </div> <!-- Closes the scrollable-channels wrapper div -->
+
+    <!-- CORE INTERNAL INTERFACE LOGIC ENGINE -->
+    <script>
+        const cdnVideo = document.getElementById('native-engine-display');
+        const ytIframe = document.getElementById('youtube-engine-display');
+        let activeHlsLinkInstance = null;
+
+        // Clean out display resources completely to prevent player overlaps
+        function resetActiveViewports() {
+            if (activeHlsLinkInstance) {
+                activeHlsLinkInstance.destroy();
+                activeHlsLinkInstance = null;
+            }
+            cdnVideo.style.display = 'none';
+            cdnVideo.pause();
+            cdnVideo.src = '';
+            
+            ytIframe.style.display = 'none';
+            ytIframe.src = '';
+        }
+
+        // Primary Evaluator: Reads drop-down selection parameters and routes them to the correct internal engine
+        function tuneMatrixChannel(channelKey) {
+            resetActiveViewports();
+            
+            // Reads whichever specific drop-down item is selected for the targeted channel card
+            const dropdownElement = document.getElementById('src-' + channelKey);
+            const chosenValue = dropdownElement.value;
+
+            // Route 1: Explicitly saved direct YouTube Video ID
+            if (chosenValue.startsWith('yt_vid:')) {
+                const videoId = chosenValue.substring(7); // Drops the prefix "yt_vid:"
+                ytIframe.style.display = 'block';
+                ytIframe.src = "https://youtube.com" + videoId + "?autoplay=1&mute=0&rel=0";
+            } 
+            // Route 2: Permanent Unexpiring Channel Profile Stream Finder
+            else if (chosenValue.startsWith('yt_ch:')) {
+                const channelId = chosenValue.substring(6); // Drops the prefix "yt_ch:"
+                ytIframe.style.display = 'block';
+                ytIframe.src = "https://youtube.comlive_stream?channel=" + channelId + "&autoplay=1&mute=0&rel=0";
+            }
+            // Route 3: Core HLS .m3u8 Stream Decoder for CDN Nodes
+            else if (chosenValue.startsWith('m3u:')) {
+                const streamUrl = chosenValue.substring(4); // Drops the prefix "m3u:"
+                cdnVideo.style.display = 'block';
+
+                if (Hls.isSupported()) {
+                    activeHlsLinkInstance = new Hls();
+                    activeHlsLinkInstance.loadSource(streamUrl);
+                    activeHlsLinkInstance.attachMedia(cdnVideo);
+                    activeHlsLinkInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                        cdnVideo.play().catch(err => console.log("Autoplay context blockade bypassed."));
+                    });
+                } else if (cdnVideo.canPlayType('application/x-mpegURL')) {
+                    cdnVideo.src = streamUrl;
+                    cdnVideo.play();
+                }
+            }
+            // Route 4: Deep linking outward to local Android Applications
+            else if (chosenValue.startsWith('app:')) {
+                const packageIdentity = chosenValue.substring(4); // Drops the prefix "app:"
+                window.open("intent://#Intent;scheme=android-app;package=" + packageIdentity + ";end", '_blank');
+            }
+            // Route 5: External Tab Breakouts for secure network targets (Core New Zealand Fix)
+            else if (chosenValue.startsWith('web:')) {
+                const targetUrl = chosenValue.substring(4); // Drops the prefix "web:"
+                window.open(targetUrl, '_blank');
+            }
+        }
+
+        // AUTO-LAUNCH BLOCK: Runs SGPC selection instantly upon initial page compilation
+        tuneMatrixChannel('sgpc');
+    </script>
+</body>
+</html>
