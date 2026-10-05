@@ -3,221 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Universal TV Terminal</title>
-    
-    <!-- Heavy-duty HLS stream decoding engine to read raw .m3u8 streams internally -->
-    <script src="https://jsdelivr.net"></script>
-
+    <title>Lightweight Free TV Hub</title>
     <style>
+        /* CSS reset rules ensuring full split-screen scaling */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            background-color: #0c0c10;
+            background-color: #0d0d11;
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* 1. FIXED TOP SCREEN DISPLAY: Frozen on top of mobile or tablet viewports */
-        .video-viewport-stage {
+        /* TOP SCREEN PORTAL: Widescreen box locked to the top of your tablet view */
+        .screen-container {
             width: 100%;
             aspect-ratio: 16/9;
             background-color: #000000;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
         }
 
-        video, iframe {
+        iframe {
             width: 100%;
             height: 100%;
             border: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: none;
         }
 
-        /* 2. SCROLLABLE ENGINE SELECTION: Scrolls seamlessly underneath the screen player */
-        .main-scroll-body {
+        /* SCROLLABLE GRID ZONE: Allows endless scrolling for channels underneath */
+        .scrollable-channels {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
             padding-bottom: 50px;
-            -webkit-overflow-scrolling: touch;
+            -webkit-overflow-scrolling: touch; /* Fluid scrolling mechanics */
         }
 
-        .category-heading {
+        .category-title {
             font-size: 11px;
-            font-weight: 700;
+            color: #888892;
+            margin-bottom: 8px;
+            font-weight: bold;
             text-transform: uppercase;
-            color: #71717a;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #1e1e24;
-            padding-bottom: 4px;
+            letter-spacing: 0.5px;
         }
 
-        .channel-grid {
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(2, 1fr); /* 2 Column split setup */
+            gap: 10px;
             margin-bottom: 25px;
         }
 
-        /* Channel Block wrapper keeping button and source selection nested */
-        .channel-card {
-            background-color: #161622;
-            border: 1px solid #27273a;
-            border-radius: 10px;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .action-btn {
-            background-color: #252538;
+        .btn {
             color: #ffffff;
-            border: 1px solid #3d3d5c;
-            padding: 14px 6px;
-            font-size: 13px;
+            border: 1px solid #282835;
+            padding: 18px 10px;
+            font-size: 14px;
             font-weight: bold;
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
             text-align: center;
+            transition: background-color 0.1s;
         }
 
-        .action-btn:active {
-            background-color: #3b82f6;
-        }
+        /* Distinct color tags for visual separation */
+        .btn-yt { background-color: #1f1212; border-left: 4px solid #ef4444; }
+        .btn-vlc { background-color: #1f1812; border-left: 4px solid #f97316; }
 
-        .source-selector {
-            background-color: #0d0d14;
-            color: #a1a1aa;
-            border: 1px solid #27273a;
-            padding: 6px;
-            font-size: 11px;
-            border-radius: 4px;
-            width: 100%;
-            outline: none;
-            cursor: pointer;
+        .btn:active {
+            background-color: #272736;
+            transform: scale(0.96);
         }
     </style>
 </head>
 <body>
 
-    <!-- VISUAL HUB MONITOR PANEL -->
-    <div class="video-viewport-stage">
-        <video id="native-engine-display" controls autoplay playsinline></video>
-        <iframe id="youtube-engine-display" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    <!-- VISUAL MEDIA PLAYER DISPLAY STAGE -->
+    <div class="screen-container">
+        <!-- We use the verified secure YouTube embed path structure -->
+        <iframe id="display-viewport" src="https://youtube.com" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
 
-    <!-- TOUCH INTERFACE ROW -->
-    <div class="main-scroll-body">
-        
-        <div class="category-heading">📺 Multi-Source Channel Matrix</div>
-        <div class="channel-grid">
+    <!-- LOWER SCROLL VIEWABLE GRID COMPONENT -->
+    <div class="scrollable-channels">
 
-            <!-- SGPC DEVOTIONAL MATRIX -->
-            <div class="channel-card">
-                <button class="action-btn" onclick="tuneMatrixChannel('sgpc')">✨ SGPC Live</button>
-                <select id="src-sgpc" class="source-selector">
-                    <option value="yt:Qv2eRRU_56A">YouTube Source 1</option>
-                    <option value="yt:vFXADUnLJ89FMc7y">YouTube Source 2</option>
-                </select>
-            </div>
+        <!-- SECTION A: CHANNELS PLAYING DIRECTLY INSIDE APP STAGE -->
+        <div class="category-title">📺 Native Live Streams (Plays Above)</div>
+        <div class="grid">
+            <button class="btn btn-yt" onclick="playInApp('Qv2eRRU_56A')">✨ SGPC Live</button>
+            <button class="btn btn-yt" onclick="playInApp('b2_x60nNf7o')">🎵 PTC Punjabi</button>
+            <button class="btn btn-yt" onclick="playInApp('9Auqeyv765k')">🇬🇧 Sky News</button>
+            <button class="btn btn-yt" onclick="playInApp('2MT93N-S9_E')">🌍 Al Jazeera</button>
+        </div>
 
-            <!-- PTC MEDIA CONTAINER -->
-            <div class="channel-card">
-                <button class="action-btn" onclick="tuneMatrixChannel('ptc')">🎵 PTC Punjabi</button>
-                <select id="src-ptc" class="source-selector">
-                    <option value="yt:b2_x60nNf7o">YouTube Feed</option>
-                </select>
-            </div>
-
-            <!-- GLOBAL DIRECT IPTV (STABLE DEMO CHANNELS) -->
-            <div class="channel-card">
-                <button class="action-btn" onclick="tuneMatrixChannel('nasatv')">🚀 NASA TV</button>
-                <select id="src-nasatv" class="source-selector">
-                    <option value="m3u:https://akamaized.net">Direct CDN Link</option>
-                </select>
-            </div>
-
-            <div class="channel-card">
-                <button class="action-btn" onclick="tuneMatrixChannel('nhk')">🇯🇵 NHK World</button>
-                <select id="src-nhk" class="source-selector">
-                    <option value="m3u:https://akamaized.net">Direct CDN Link</option>
-                </select>
-            </div>
-
-            <div class="channel-card">
-                <button class="action-btn" onclick="tuneMatrixChannel('redbull')">🏎️ Red Bull TV</button>
-                <select id="src-redbull" class="source-selector">
-                    <option value="m3u:https://amagi.tv">IPTV Database Link</option>
-                </select>
-            </div>
-
+        <!-- SECTION B: IPTV LINKS THAT REDIRECT INTO EXTERNAL VLC APP -->
+        <div class="category-title">🧡 Public IPTV (Launches VLC Directly)</div>
+        <div class="grid">
+            <!-- These use the simplified protocol that forces Android to open VLC directly -->
+            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇮🇳 NDTV India</button>
+            <button class="btn btn-vlc" onclick="playInVLC('https://cloudfront.net')">📰 ABP News</button>
+            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🚀 NASA TV</button>
+            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇯🇵 NHK World</button>
         </div>
 
     </div>
 
-    <!-- LOGIC PROCESSING SCRIPT ENGINE -->
+    <!-- CONTROL MACHINE ROUTER LOGIC -->
     <script>
-        const cdnVideo = document.getElementById('native-engine-display');
-        const ytIframe = document.getElementById('youtube-engine-display');
-        let activeHlsLinkInstance = null;
+        const webView = document.getElementById('display-viewport');
 
-        function clearViewports() {
-            if (activeHlsLinkInstance) {
-                activeHlsLinkInstance.destroy();
-                activeHlsLinkInstance = null;
-            }
-            cdnVideo.style.display = 'none';
-            cdnVideo.pause();
-            cdnVideo.src = '';
-            
-            ytIframe.style.display = 'none';
-            ytIframe.src = '';
+        // MODULE 1: Updates iframe viewport source with strict player safety parameters
+        function playInApp(youtubeVideoId) {
+            webView.src = "https://www.youtube.com/embed/" + youtubeVideoId + "?autoplay=1&mute=0&rel=0";
         }
 
-        function tuneMatrixChannel(channelKey) {
-            clearViewports();
-            
-            const dropdownElement = document.getElementById('src-' + channelKey);
-            const chosenValue = dropdownElement.value;
-
-            // Type 1: YouTube Streaming Path Redirect
-            if (chosenValue.startsWith('yt:')) {
-                const videoId = chosenValue.substring(3); 
-                ytIframe.style.display = 'block';
-                ytIframe.src = "https://youtube.com" + videoId + "?autoplay=1&rel=0";
-            } 
-            // Type 2: Core HLS .m3u8 Stream Decoder
-            else if (chosenValue.startsWith('m3u:')) {
-                const streamUrl = chosenValue.substring(4); 
-                cdnVideo.style.display = 'block';
-
-                if (Hls.isSupported()) {
-                    activeHlsLinkInstance = new Hls();
-                    activeHlsLinkInstance.loadSource(streamUrl);
-                    activeHlsLinkInstance.attachMedia(cdnVideo);
-                    activeHlsLinkInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                        cdnVideo.play().catch(err => console.log("System initialization block bypassed."));
-                    });
-                } else if (cdnVideo.canPlayType('application/x-mpegURL')) {
-                    cdnVideo.src = streamUrl;
-                    cdnVideo.play();
-                }
-            }
+        // MODULE 2: Simple VLC Protocol stream sender.
+        // Instead of a heavy Android manifest intent code, this tells the OS 
+        // to hand the live feed directly over to the local VLC software media stream decoder.
+        function playInVLC(rawStreamUrl) {
+            window.location.href = "vlc://" + rawStreamUrl;
         }
-
-        // Auto-run first option on launch to test the layout immediately
-        tuneMatrixChannel('sgpc');
     </script>
+
 </body>
 </html>
