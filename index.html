@@ -2,181 +2,234 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Universal Multi-Source Matrix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core NZ TV Player</title>
     <style>
-        /* CSS rules preventing touch-scaling glitches on mobile or tablet layouts */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            background-color: #0c0c11;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* 1. STICKY TOP SCREEN: Locks your visual TV player neatly at the top of your tablet screen */
-        .screen-container {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background-color: #000000;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-        }
-
-        iframe {
+        body, html {
+            margin: 0;
+            padding: 0;
             width: 100%;
             height: 100%;
-            border: none;
+            background-color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            color: #fff;
         }
-
-        /* 2. LOWER TOUCH ZONE: Grid items scroll completely free underneath the stream screen */
-        .scrollable-channels {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            padding-bottom: 60px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .category-title {
-            font-size: 11px;
-            color: #888892;
-            margin-bottom: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid #22222b;
-            padding-bottom: 4px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Creates two columns for phones/tablets */
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        .channel-card {
-            background-color: #171722;
-            border: 1px solid #29293a;
-            border-radius: 12px;
-            padding: 10px;
+        .player-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            justify-content: center;
+            align-items: center;
         }
-
-        .btn-play {
-            background-color: #252538;
-            color: #ffffff;
-            border: 1px solid #3d3d5c;
-            padding: 15px 5px;
+        /* Video element wrapper */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            object-fit: contain;
+        }
+        /* Overlay Status Alerts */
+        .status-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.75);
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            z-index: 10;
+            pointer-events: none;
+            border: 1px solid #333;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007aff;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Control Overlay */
+        .controls-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            padding: 20px 15px 15px 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 5;
+        }
+        .player-container:hover .controls-bar,
+        .player-container.show-controls .controls-bar {
+            opacity: 1;
+        }
+        .btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
             font-size: 14px;
             font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.15);
+            transition: background 0.2s;
         }
-
-        .btn-play:active {
-            background-color: #3b82f6;
-        }
-
-        .source-selector {
-            background-color: #0d0d14;
-            color: #a1a1aa;
-            border: 1px solid #29293a;
-            padding: 8px;
-            font-size: 11px;
-            font-weight: bold;
-            border-radius: 6px;
-            width: 100%;
-            outline: none;
-            cursor: pointer;
+        .btn:hover { background: rgba(255,255,255,0.3); }
+        .channel-title {
+            flex-grow: 1;
+            font-size: 16px;
+            font-weight: 500;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
         }
     </style>
+    <!-- Include HLS.js for streaming compatibility on Android/M3U8 -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
 </head>
 <body>
 
-    <!-- VISUAL MEDIA PLAYER DISPLAY CONTAINER -->
-    <div class="screen-container">
-        <!-- Built using the exact same secure link structure that successfully played your SGPC stream -->
-        <iframe id="youtube-engine-display" src="https://youtube.com" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-    </div>
-
-    <!-- LOWER SELECTION MATRIX -->
-    <div class="scrollable-channels">
-
-        <div class="category-title">📺 Multi-Source Channel Matrix (4 Links Each)</div>
-        <div class="grid">
-
-            <!-- CARD MODULE 1: SGPC LIVE -->
-            <div class="channel-card">
-                <button class="btn-play" onclick="tuneMatrixChannel('sgpc')">✨ SGPC Live</button>
-                <select id="src-sgpc" class="source-selector">
-                    <option value="FMQ3uVD6jX8">Source 1: Daily Live Main</option>
-                    <option value="ANwqeF-PW1g">Source 2: Morning Session</option>
-                    <option value="UDqpLH181Dw">Source 3: Evening Session</option>
-                    <option value="oo9AUNyBJjg">Source 4: Backup Stream</option>
-                </select>
-            </div>
-
-            <!-- CARD MODULE 2: PTC PUNJABI NEWS -->
-            <div class="channel-card">
-                <button class="btn-play" onclick="tuneMatrixChannel('ptc')">🎵 PTC News Live</button>
-                <select id="src-ptc" class="source-selector">
-                    <option value="1zqa-He6NXg">Source 1: Active Stream</option>
-                    <option value="bvRiRnRX4ko">Source 2: Backup Loop 1</option>
-                    <option value="VBFMudrPB-A">Source 3: Backup Loop 2</option>
-                    <option value="2sDz6MMgfU0">Source 4: Regional Stream</option>
-                </select>
-            </div>
-
-            <!-- CARD MODULE 3: GLOBAL CHANNELS -->
-            <div class="channel-card">
-                <button class="btn-play" onclick="tuneMatrixChannel('skynews')">🇬🇧 Sky News</button>
-                <select id="src-skynews" class="source-selector">
-                    <option value="9Auqeyv765k">Source 1: International Live</option>
-                    <option value="qhnX4jA0A5paNd1v-zEysw">Source 2: Network Feed</option>
-                    <option value="v=9Auqeyv765k">Source 3: Backup Stream</option>
-                    <option value="FMQ3uVD6jX8">Source 4: SGPC Devotional</option>
-                </select>
-            </div>
-
-            <!-- CARD MODULE 4: POPULAR FREE CHANNELS -->
-            <div class="channel-card">
-                <button class="btn-play" onclick="tuneMatrixChannel('aajtak')">🔥 Aaj Tak</button>
-                <select id="src-aajtak" class="source-selector">
-                    <option value="Nq2wYlWFucg">Source 1: Live Main Feed</option>
-                    <option value="e1FIApIafWE">Source 2: India TV Live</option>
-                    <option value="sYZtOFzM78M">Source 3: India Today Feed</option>
-                    <option value="1zqa-He6NXg">Source 4: PTC News Backup</option>
-                </select>
-            </div>
-
+<div class="player-container" id="playerContainer">
+    <div class="video-wrapper">
+        <video id="videoPlayer" controls playsinline></video>
+        
+        <div class="status-overlay" id="statusOverlay">
+            <div class="spinner" id="statusSpinner"></div>
+            <div id="statusText">Loading Stream...</div>
         </div>
-
     </div>
 
-    <!-- CORE INTERNAL LOGIC ENGINE -->
-    <script>
-        const ytIframe = document.getElementById('youtube-engine-display');
+    <!-- UI Feature Bar overlaying the frame -->
+    <div class="controls-bar">
+        <button class="btn" id="playPauseBtn">Pause</button>
+        <div class="channel-title" id="displayChannelName">No Stream Loaded</div>
+        <button class="btn" id="reloadBtn">Reload</button>
+    </div>
+</div>
 
-        // Master routing controller
-        function tuneMatrixChannel(channelKey) {
-            // Step 1: Grabs whichever specific drop-down item is selected for the targeted channel card
-            const dropdownElement = document.getElementById('src-' + channelKey);
-            const chosenVideoId = dropdownElement.value;
+<script>
+    const video = document.getElementById('videoPlayer');
+    const statusOverlay = document.getElementById('statusOverlay');
+    const statusText = document.getElementById('statusText');
+    const statusSpinner = document.getElementById('statusSpinner');
+    const displayChannelName = document.getElementById('displayChannelName');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const reloadBtn = document.getElementById('reloadBtn');
+    const playerContainer = document.getElementById('playerContainer');
+    
+    let hls = null;
+    let currentStreamUrl = "";
+    let controlsTimeout;
 
-            // Step 2: Instantly injects the clean ID using your verified functional string structure
-            ytIframe.src = "https://youtube.com" + chosenVideoId + "?autoplay=1&mute=0&rel=0";
+    // Show status utility
+    function showStatus(text, showSpinner = true) {
+        statusText.innerText = text;
+        statusSpinner.style.display = showSpinner ? 'block' : 'none';
+        statusOverlay.style.display = 'block';
+    }
+
+    function hideStatus() {
+        statusOverlay.style.display = 'none';
+    }
+
+    // Direct interface function called from parent index.html window/iframe context
+    window.loadStream = function(url, name) {
+        if (!url) return;
+        currentStreamUrl = url;
+        displayChannelName.innerText = name || "Live Channel";
+        showStatus("Loading: " + (name || "Stream") + "...");
+        
+        // Reset existing HLS instance
+        if (hls) {
+            hls.destroy();
+            hls = null;
         }
-    </script>
+
+        if (Hls.isSupported()) {
+            hls = new Hls({
+                maxBufferLength: 10,
+                enableWorker: true,
+                lowLatencyMode: true
+            });
+            hls.loadSource(url);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.play().catch(() => {
+                    showStatus("Tap Play to Watch", false);
+                });
+            });
+            hls.on(Hls.Events.ERROR, function(event, data) {
+                if (data.fatal) {
+                    showStatus("Stream Error. Retrying...", true);
+                    hls.recoverMediaError();
+                }
+            });
+        } 
+        // Native fallback (iOS / Safari / some older Android engines)
+        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = url;
+            video.addEventListener('loadedmetadata', function() {
+                video.play().catch(() => {
+                    showStatus("Tap Play to Watch", false);
+                });
+            });
+        } else {
+            showStatus("Streaming not supported on this browser.", false);
+        }
+    };
+
+    // Video Event Handlers for Status Screen
+    video.addEventListener('waiting', () => showStatus("Buffering..."));
+    video.addEventListener('playing', () => { hideStatus(); playPauseBtn.innerText = "Pause"; });
+    video.addEventListener('pause', () => playPauseBtn.innerText = "Play");
+
+    // Feature Controls UI Interaction
+    playPauseBtn.addEventListener('click', () => {
+        if (video.paused) video.play();
+        else video.pause();
+    });
+
+    reloadBtn.addEventListener('click', () => {
+        if (currentStreamUrl) window.loadStream(currentStreamUrl, displayChannelName.innerText);
+    });
+
+    // Handle Mobile tap to reveal controls
+    function triggerControls() {
+        playerContainer.classList.add('show-controls');
+        clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(() => {
+            playerContainer.classList.remove('show-controls');
+        }, 3000);
+    }
+    playerContainer.addEventListener('click', triggerControls);
+    playerContainer.addEventListener('touchstart', triggerControls);
+
+    // Listen for commands posted via postMessage if running across strict domains
+    window.addEventListener("message", function(event) {
+        if (event.data && event.data.type === "LOAD_STREAM") {
+            window.loadStream(event.data.url, event.data.name);
+        }
+    });
+</script>
 </body>
 </html>
