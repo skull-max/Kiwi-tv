@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Multi-Source Test Player</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: #0d0d11;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* TOP SCREEN PORTAL: Widescreen box locked to the top */
+        .screen-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background-color: #000000;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* SCROLLABLE GRID ZONE */
+        .scrollable-channels {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 50px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .category-title {
+            font-size: 11px;
+            color: #888892;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        /* The Multi-Source Channel Card Box */
+        .channel-card {
+            background-color: #171722;
+            border: 1px solid #29293a;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn {
+            color: #ffffff;
+            border: 1px solid #282835;
+            padding: 15px 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            background-color: #1f1212; 
+            border-left: 4px solid #ef4444;
+        }
+
+        .btn:active {
+            background-color: #272736;
+            transform: scale(0.96);
+        }
+
+        .source-selector {
+            background-color: #0d0d14;
+            color: #a1a1aa;
+            border: 1px solid #29293a;
+            padding: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 6px;
+            width: 100%;
+            outline: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- VISUAL MEDIA PLAYER DISPLAY STAGE -->
+    <div class="screen-container">
+        <!-- Defaults to working SGPC Video Link on startup -->
+        <iframe id="display-viewport" src="https://youtube.com" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    </div>
+
+    <!-- LOWER SCROLL VIEWABLE GRID COMPONENT -->
+    <div class="scrollable-channels">
+
+        <div class="category-title">📺 Multi-Source Grid (4 Options Each)</div>
+        <div class="grid">
+
+            <!-- CHANNEL CARD 1: SGPC LIVE -->
+            <div class="channel-card">
+                <button class="btn" onclick="playChannel('sgpc')">✨ SGPC Live</button>
+                <select id="src-sgpc" class="source-selector">
+                    <option value="vid:Qv2eRRU_56A">Option 1: Direct Video Link</option>
+                    <option value="ch:UCkA21M22vGK9GtAvq3DvSlA">Option 2: Permanent Profile Stream</option>
+                    <option value="vid:vFXADUnLJ89FMc7y">Option 3: Alternative Clip ID</option>
+                    <option value="vid:Qv2eRRU_56A">Option 4: Backup Loop</option>
+                </select>
+            </div>
+
+            <!-- CHANNEL CARD 2: PTC PUNJABI -->
+            <div class="channel-card">
+                <button class="btn" onclick="playChannel('ptc')">🎵 PTC Punjabi</button>
+                <select id="src-ptc" class="source-selector">
+                    <option value="ch:UCHJW1_0oPzYZl89wX_jhrgA">Option 1: Permanent Profile Stream</option>
+                    <option value="vid:b2_x60nNf7o">Option 2: Direct Video Link</option>
+                    <option value="ch:UCX6BOlQ2HFxs36v_sYfHwTw">Option 3: Aaj Tak Channel Live</option>
+                    <option value="vid:Qv2eRRU_56A">Option 4: SGPC Backup Feed</option>
+                </select>
+            </div>
+
+            <!-- CHANNEL CARD 3: SKY NEWS -->
+            <div class="channel-card">
+                <button class="btn" onclick="playChannel('skynews')">🇬🇧 Sky News</button>
+                <select id="src-skynews" class="source-selector">
+                    <option value="ch:UCqhnX4jA0A5paNd1v-zEysw">Option 1: Permanent Profile Stream</option>
+                    <option value="vid:9Auqeyv765k">Option 2: Direct Video Link</option>
+                    <option value="ch:UCNye-wNBqNL5ZzHSJj3l8Bg">Option 3: Al Jazeera Profile</option>
+                    <option value="vid:2MT93N-S9_E">Option 4: Al Jazeera Video Link</option>
+                </select>
+            </div>
+
+            <!-- CHANNEL CARD 4: GLOBAL NEWS -->
+            <div class="channel-card">
+                <button class="btn" onclick="playChannel('global')">🌍 Al Jazeera</button>
+                <select id="src-global" class="source-selector">
+                    <option value="ch:UCNye-wNBqNL5ZzHSJj3l8Bg">Option 1: Permanent Profile Stream</option>
+                    <option value="vid:2MT93N-S9_E">Option 2: Direct Video Link</option>
+                    <option value="ch:UCqhnX4jA0A5paNd1v-zEysw">Option 3: Sky News Profile</option>
+                    <option value="vid:9Auqeyv765k">Option 4: Sky News Video Link</option>
+                </select>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CONTROL MACHINE ROUTER LOGIC -->
+    <script>
+        const webView = document.getElementById('display-viewport');
+
+        function playChannel(channelKey) {
+            // Read the current chosen option inside the specific dropdown menu
+            const dropdown = document.getElementById('src-' + channelKey);
+            const value = dropdown.value;
+
+            // Route A: If it's a fixed Video ID
+            if (value.startsWith('vid:')) {
+                const videoId = value.substring(4);
+                webView.src = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=0&rel=0";
+            }
+            // Route B: If it's a permanent Channel ID (Forces network crawling search)
+            else if (value.startsWith('ch:')) {
+                const channelId = value.substring(3);
+                webView.src = "https://youtube.com" + channelId + "&autoplay=1&mute=0&rel=0";
+            }
+        }
+    </script>
+
+</body>
+</html>
