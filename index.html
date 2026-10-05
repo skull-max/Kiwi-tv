@@ -3,213 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global IPTV Dashboard</title>
+    <title>Free Live TV Portal</title>
+    <!-- Include the video engine library directly in this file to prevent loading lag -->
+    <script src="https://jsdelivr.net"></script>
     <style>
-        :root {
-            --bg-color: #121212;
-            --card-color: #1e1e1e;
-            --accent-color: #00adb5;
-            --text-color: #eeeeee;
-        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: sans-serif;
+            background-color: #121212;
+            color: #ffffff;
             margin: 0;
             padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center;
         }
-        .container {
-            width: 100%;
-            max-width: 800px;
+        .wrapper {
+            max-width: 700px;
+            margin: 0 auto;
         }
-        .frame-container {
-            position: relative;
+        .video-box {
             width: 100%;
-            padding-top: 56.25%; /* Fixed 16:9 Aspect Ratio */
             background: #000;
             border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            aspect-ratio: 16/9;
         }
-        .frame-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
+        video {
             width: 100%;
             height: 100%;
-            border: none;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            width: 100%;
+            border-radius: 8px;
         }
         select {
-            flex: 1;
+            width: 100%;
             padding: 12px;
-            background-color: var(--card-color);
-            color: var(--text-color);
-            border: 1px solid #333;
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
             border-radius: 6px;
             font-size: 16px;
-            outline: none;
+            margin-bottom: 15px;
         }
-        .channel-grid {
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 5px;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
         }
-        .channel-card {
-            background-color: var(--card-color);
-            border: 1px solid #2d2d2d;
+        .card {
+            background: #1e1e1e;
+            padding: 15px 5px;
             border-radius: 6px;
-            padding: 15px 10px;
-            text-align: center;
             cursor: pointer;
             font-size: 14px;
-            font-weight: 500;
-            transition: transform 0.1s, border-color 0.2s;
-            word-wrap: break-word;
+            border: 1px solid #333;
         }
-        .channel-card:hover, .channel-card:active {
-            border-color: var(--accent-color);
-            transform: scale(1.02);
+        .card:active {
+            background: #00adb5;
         }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- Shared Viewport Frame Hub -->
-    <div class="frame-container">
-        <iframe id="mainViewer" src="player.html" allow="autoplay; fullscreen"></iframe>
+<div class="wrapper">
+    <!-- Clean Local Video Engine Player Element -->
+    <div id="playerContainer" class="video-box">
+        <video id="videoPlayer" controls autoplay playsinline></video>
     </div>
 
-    <!-- Category Dropdown Picker -->
-    <div class="controls">
-        <select id="categorySelector" onchange="filterCategory()">
-            <option value="all">🌐 All Channels</option>
-            <option value="live">📺 Live Streams (YouTube / SGPC)</option>
-            <option value="nz">🇳🇿 IPTV New Zealand</option>
-            <option value="india">🇮🇳 IPTV India</option>
-        </select>
-    </div>
+    <!-- Dropdown Selector -->
+    <select id="menu" onchange="switchCategory()">
+        <option value="all">🌐 View All Channels</option>
+        <option value="nz">🇳🇿 New Zealand Channels</option>
+        <option value="india">🇮🇳 India Channels</option>
+    </select>
 
-    <!-- Channel Cards Output List -->
-    <div id="channelGrid" class="channel-grid"></div>
+    <!-- Channel Cards Grid -->
+    <div id="channelGrid" class="grid">
+        <!-- SGPC Live Stream -->
+        <div class="card" data-cat="india" onclick="playYouTube('https://youtube.com')">🪔 SGPC Amritsar Live</div>
+        
+        <!-- Live NZ TV stream points (Direct m3u8 codecs from Matt Huisman public index) -->
+        <div class="card" data-cat="nz" onclick="playM3U8('https://cloudfront.net')">🇳🇿 TVNZ 1</div>
+        <div class="card" data-cat="nz" onclick="playM3U8('https://duoak7vltfob0.cloudfront.net/v1/master/b1f4432f8f95be9e629d97baabfed15b8cacd1f8/TVNZ_2/master.m3u8')">🇳🇿 TVNZ 2</div>
+        
+        <!-- Verified Indian Public Streams -->
+        <div class="card" data-cat="india" onclick="playM3U8('https://akamaized.net')">🇮🇳 DD News Live</div>
+    </div>
 </div>
 
 <script>
-    // Managed Multi-Link Database Configuration
-    const channels = [
-        { 
-            name: "🪔 SGPC Amritsar Live", 
-            category: "live", 
-            type: "youtube",
-            // Priority 1: Direct fallback embedded layout player URL
-            url1: "https://youtube.com", 
-            // Priority 2: Alternative backup layout link wrapper
-            url2: "https://youtube.com" 
-        },
-        { 
-            name: "🔴 Sky News Live", 
-            category: "live", 
-            type: "youtube",
-            url1: "https://youtube.com",
-            url2: "https://youtube.com"
-        },
-        { 
-            name: "🇳🇿 TVNZ 1 (IPTV)", 
-            category: "nz", 
-            type: "m3u8",
-            url1: "https://githubusercontent.com", 
-            url2: "https://iptv-org.github.io/iptv/countries/nz.m3u" 
-        },
-        { 
-            name: "🇳🇿 Three (IPTV)", 
-            category: "nz", 
-            type: "m3u8",
-            url1: "https://iptv-org.github.io/iptv/countries/nz.m3u",
-            url2: "https://githubusercontent.com"
-        },
-        { 
-            name: "🇮🇳 DD National (IPTV)", 
-            category: "india", 
-            type: "m3u8",
-            url1: "https://github.io", 
-            url2: "https://githubusercontent.com" 
-        },
-        { 
-            name: "🇮🇳 Aaj Tak (IPTV)", 
-            category: "india", 
-            type: "m3u8",
-            url1: "https://github.io",
-            url2: "https://githubusercontent.com"
+    const video = document.getElementById('videoPlayer');
+    const hls = new Hls();
+
+    function playM3U8(url) {
+        // If switching from YouTube, ensure player interface defaults are restored
+        document.getElementById('playerContainer').innerHTML = '<video id="videoPlayer" controls autoplay playsinline></video>';
+        const newVideo = document.getElementById('videoPlayer');
+        
+        if (Hls.isSupported()) {
+            hls.loadSource(url);
+            hls.attachMedia(newVideo);
+        } else if (newVideo.canPlayType('application/vnd.apple.mpegurl')) {
+            newVideo.src = url;
         }
-    ];
+    }
 
-    const viewer = document.getElementById('mainViewer');
-    const grid = document.getElementById('channelGrid');
+    function playYouTube(embedUrl) {
+        // Swap out the video engine block natively to prevent the "Sad Face" frame crash
+        document.getElementById('playerContainer').innerHTML = 
+            `<iframe width="100%" height="100%" src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen style="border-radius:8px;"></iframe>`;
+    }
 
-    function renderChannels(list) {
-        grid.innerHTML = "";
-        list.forEach(chan => {
-            const card = document.createElement('div');
-            card.className = 'channel-card';
-            card.innerText = chan.name;
-            // Primary click triggers the priority link; right-click/long-press can use backup
-            card.onclick = () => loadMedia(chan.url1, chan.type);
-            card.oncontextmenu = (e) => {
-                e.preventDefault();
-                loadMedia(chan.url2, chan.type);
-            };
-            grid.appendChild(card);
+    function switchCategory() {
+        const selected = document.getElementById('menu').value;
+        const cards = document.querySelectorAll('.card');
+        
+        cards.forEach(card => {
+            if (selected === 'all' || card.getAttribute('data-cat') === selected) {
+                card.classList.remove('hidden');
+            } else {
+                card.classList.add('hidden');
+            }
         });
     }
-
-    function loadMedia(streamUrl, type) {
-        if (type === "youtube") {
-            // Bypass internal media engines; paint YouTube iframe cleanly
-            viewer.src = streamUrl;
-        } else {
-            // Ensure core layout environment points back to internal structural baseline player
-            if (!viewer.src.includes("player.html")) {
-                viewer.src = "player.html";
-                // Wait for document layout to mount before firing postMessage
-                viewer.onload = () => sendToPlayer(streamUrl);
-            } else {
-                sendToPlayer(streamUrl);
-            }
-        }
-    }
-
-    function sendToPlayer(url) {
-        viewer.contentWindow.postMessage({
-            type: "LOAD_STREAM",
-            url: url
-        }, "*");
-    }
-
-    function filterCategory() {
-        const value = document.getElementById('categorySelector').value;
-        if (value === "all") {
-            renderChannels(channels);
-        } else {
-            const filtered = channels.filter(c => c.category === value);
-            renderChannels(filtered);
-        }
-    }
-
-    // Initialize application layout display
-    renderChannels(channels);
 </script>
+
 </body>
 </html>
