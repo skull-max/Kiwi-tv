@@ -2,195 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kiwi & Indian IPTV Engine</title>
-    
-    <!-- Production HLS video decoding engine -->
-    <script src="https://jsdelivr.net"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Free TV Player</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            background-color: #0c0c0f;
+            background-color: #121212;
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden; /* Stops the overall browser screen from bouncing glitchily */
+            overflow: hidden;
         }
 
-        /* 1. FIXED TOP STAGE: The video viewer stays locked on top of the phone screen */
-        .video-viewport-stage {
+        /* 1. FIXED TOP SCREEN: Keeps the player stuck to the top */
+        .video-container {
             width: 100%;
-            background-color: #000000;
             aspect-ratio: 16/9;
-            z-index: 10;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            position: relative;
+            background-color: #000000;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        video, iframe {
+        iframe {
             width: 100%;
             height: 100%;
             border: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: none;
         }
 
-        /* 2. SCROLLABLE CONTENT BODY: Allows smooth touch scrolling for endless channel options */
-        .main-scroll-body {
+        /* 2. SCROLLABLE BUTTONS LIST: Scrolls smoothly underneath on phone or tablet */
+        .buttons-list {
             flex: 1;
-            overflow-y: auto; /* Forces vertical scrolling inside this container panel */
-            padding: 15px 15px 40px 15px;
-            -webkit-overflow-scrolling: touch; /* Ensures fluid touch friction on mobile screens */
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 50px; /* Space at bottom so it doesn't clip */
         }
 
-        .category-block {
-            margin-bottom: 20px;
-        }
-
-        .row-heading {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #71717a;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #1e1e24;
-            padding-bottom: 4px;
-        }
-
-        /* Clean multi-column grid layout */
-        .channel-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 10px;
-        }
-
-        .channel-btn {
-            background-color: #16161c;
-            color: #ffffff;
-            border: 1px solid #272732;
-            padding: 18px 8px;
-            font-size: 13px;
+        .section-title {
+            font-size: 12px;
+            color: #888888;
+            margin-bottom: 10px;
             font-weight: bold;
-            border-radius: 10px;
+            text-transform: uppercase;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 Buttons per row on phone */
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            background-color: #222222;
+            color: #ffffff;
+            border: 1px solid #333333;
+            padding: 20px 10px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 8px;
             cursor: pointer;
             text-align: center;
-            transition: background-color 0.1s;
         }
 
-        /* Color-coded tags to clearly partition your networks */
-        .btn-nz { border-left: 3px solid #ff4a4a; }
-        .btn-ind { border-left: 3px solid #ff9900; }
-        .btn-test { border-left: 3px solid #a855f7; }
-
-        .channel-btn:active {
-            background-color: #27273a;
-            transform: scale(0.96);
+        .btn:active {
+            background-color: #ff0000; /* Turns red when tapped */
         }
     </style>
 </head>
 <body>
 
-    <!-- THE LOCKED VISUAL MONITOR BOX -->
-    <div class="video-viewport-stage">
-        <video id="native-engine-view" controls autoplay playsinline></video>
-        <iframe id="youtube-engine-view" allowfullscreen allow="autoplay"></iframe>
+    <!-- VIDEO STAGE LOCKED AT TOP -->
+    <div class="video-container">
+        <!-- Starts automatically playing the SGPC Live channel stream -->
+        <iframe id="tv-screen" src="https://youtube.com" allowfullscreen allow="autoplay"></iframe>
     </div>
 
-    <!-- THE SCROLLABLE GRID LOWER HALF -->
-    <div class="main-scroll-body">
-        
-        <!-- SECTION 1: GLOBAL TESTING LOOPS -->
-        <div class="category-block">
-            <div class="row-heading">🛠️ Live Player Test Feeds (Bulletproof)</div>
-            <div class="channel-grid">
-                <!-- Using an ultra-stable public HLS testing feed to check player integrity -->
-                <button class="channel-btn btn-test" onclick="runDirectM3U8('https://mux.dev')">🎬 Test Stream 1</button>
-                <button class="channel-btn btn-test" onclick="runDirectM3U8('https://longtailvideo.com')">📊 Test Stream 2</button>
-            </div>
+    <!-- BUTTONS SCROLL UNDERNEATH -->
+    <div class="buttons-list">
+
+        <div class="section-title">Popular Free Channels</div>
+        <div class="grid">
+            <!-- These use the lightweight Channel IDs to fetch whatever is live right now -->
+            <button class="btn" onclick="changeChannel('UCLXp8k_A3_kS08v_MvUo_pQ')">✨ SGPC Live</button>
+            <button class="btn" onclick="changeChannel('UCHJW1_0oPzYZl89wX_jhrgA')">🎵 PTC Punjabi</button>
+            <button class="btn" onclick="changeChannel('UCqhnX4jA0A5paNd1v-zEysw')">🇬🇧 Sky News</button>
+            <button class="btn" onclick="changeChannel('UC8p1vwvWtl6T73JiExfUx1g')">🌍 Al Jazeera</button>
+            <button class="btn" onclick="changeChannel('UC9s9Z3A15Nf5M_8V6Xw')">🇩🇪 DW News</button>
+            <button class="btn" onclick="changeChannel('UCX6BOlQ2HFxs36v_sYfHwTw')">🇮🇳 Aaj Tak</button>
         </div>
 
-        <!-- SECTION 2: INDIAN POPULAR SELECTIONS -->
-        <div class="category-block">
-            <div class="row-heading">🇮🇳 Indian Live Broadcasts</div>
-            <div class="channel-grid">
-                <!-- Direct Video IDs that bypass browser CORS locks completely -->
-                <button class="channel-btn btn-ind" onclick="runYouTube('Qv2eRRU_56A')">✨ SGPC Live</button>
-                <button class="channel-btn btn-ind" onclick="runYouTube('b2_x60nNf7o')">🎵 PTC Punjabi</button>
-                <button class="channel-btn btn-ind" onclick="runYouTube('sYZtOFzM78M')">📰 India Today</button>
-                <button class="channel-btn btn-ind" onclick="runYouTube('Nq2wYlWFucg')">🔥 Aaj Tak</button>
-            </div>
-        </div>
-
-        <!-- SECTION 3: KIWI PORTAL HOOKS -->
-        <div class="category-block">
-            <div class="row-heading">🇳🇿 New Zealand Channels (System Intent Apps)</div>
-            <div class="channel-grid">
-                <!-- These wake up your tablet's local app directories safely -->
-                <button class="channel-btn btn-nz" onclick="runAndroidApp('nz.co.dishtv.FreeviewLiveTV')">📺 Freeview App</button>
-                <button class="channel-btn btn-nz" onclick="runAndroidApp('com.google.android.youtube')">🔴 YouTube App</button>
-            </div>
+        <div class="section-title">New Zealand Freeview Links</div>
+        <div class="grid">
+            <!-- Launches your tablet's local apps directly to watch NZ TV without blocks -->
+            <button class="btn" onclick="openApp('nz.co.dishtv.FreeviewLiveTV')">📺 Freeview App</button>
+            <button class="btn" onclick="openApp('com.google.android.youtube')">🔴 YouTube App</button>
         </div>
 
     </div>
 
-    <!-- MAIN PLAYER CORE ROUTER -->
     <script>
-        const cdnVideo = document.getElementById('native-engine-view');
-        const ytIframe = document.getElementById('youtube-engine-view');
-        let activeHlsController = null;
-
-        function purgeStage() {
-            if (activeHlsController) {
-                activeHlsController.destroy();
-                activeHlsController = null;
-            }
-            cdnVideo.style.display = 'none';
-            cdnVideo.pause();
-            cdnVideo.src = '';
-            
-            ytIframe.style.display = 'none';
-            ytIframe.src = '';
+        // Simply tells the iframe to drop the old stream and load the new one instantly
+        function changeChannel(channelId) {
+            document.getElementById('tv-screen').src = "https://youtube.com" + channelId + "&autoplay=1";
         }
 
-        // Action Core 1: Compiles Raw HLS Stream feeds (.m3u8 files)
-        function runDirectM3U8(streamUrl) {
-            purgeStage();
-            cdnVideo.style.display = 'block';
-
-            if (Hls.isSupported()) {
-                activeHlsController = new Hls();
-                activeHlsController.loadSource(streamUrl);
-                activeHlsController.attachMedia(cdnVideo);
-                activeHlsController.on(Hls.Events.MANIFEST_PARSED, function() {
-                    cdnVideo.play().catch(e => console.log("Blocked browser autoplay safety trigger."));
-                });
-            } else if (cdnVideo.canPlayType('application/x-mpegURL')) {
-                cdnVideo.src = streamUrl;
-                cdnVideo.play();
-            }
-        }
-
-        // Action Core 2: Hooks Direct Embed YouTube Video IDs
-        function runYouTube(videoId) {
-            purgeStage();
-            ytIframe.style.display = 'block';
-            ytIframe.src = "https://youtube.com" + videoId + "?autoplay=1&rel=0";
-        }
-
-        // Action Core 3: Deep links out to tablet applications
-        function runAndroidApp(packageName) {
+        // Bypasses the website completely to open your tablet's apps
+        function openApp(packageName) {
             window.open("intent://#Intent;scheme=android-app;package=" + packageName + ";end", '_blank');
         }
-
-        // AUTO-LAUNCH SEQUENCE: App automatically spins up Test Stream 1 to ensure instant execution
-        runDirectM3U8('https://mux.dev');
     </script>
+
 </body>
 </html>
