@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lightweight Free TV Hub</title>
     <style>
-        /* CSS reset to stop the page from stretching or glitching */
+        /* CSS reset rules ensuring full split-screen scaling */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            background-color: #111115;
+            background-color: #0d0d11;
             color: #ffffff;
             font-family: Arial, sans-serif;
             display: flex;
@@ -18,7 +18,7 @@
             overflow: hidden;
         }
 
-        /* SCREEN CONTAINER: Stays locked at the top of your phone or tablet screen */
+        /* TOP SCREEN PORTAL: Widescreen box locked to the top of your tablet view */
         .screen-container {
             width: 100%;
             aspect-ratio: 16/9;
@@ -26,7 +26,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
         }
 
         iframe {
@@ -35,18 +35,18 @@
             border: none;
         }
 
-        /* SCROLLABLE GRID BOX: Allows effortless touch scrolling underneath the video window */
+        /* SCROLLABLE GRID ZONE: Allows endless scrolling for channels underneath */
         .scrollable-channels {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
-            padding-bottom: 40px;
-            -webkit-overflow-scrolling: touch;
+            padding-bottom: 50px;
+            -webkit-overflow-scrolling: touch; /* Fluid scrolling mechanics */
         }
 
         .category-title {
             font-size: 11px;
-            color: #8e8e93;
+            color: #888892;
             margin-bottom: 8px;
             font-weight: bold;
             text-transform: uppercase;
@@ -55,14 +55,14 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Forms 2 clean columns on standard phone viewports */
+            grid-template-columns: repeat(2, 1fr); /* 2 Column split setup */
             gap: 10px;
             margin-bottom: 25px;
         }
 
         .btn {
             color: #ffffff;
-            border: 1px solid #2c2c35;
+            border: 1px solid #282835;
             padding: 18px 10px;
             font-size: 14px;
             font-weight: bold;
@@ -72,41 +72,40 @@
             transition: background-color 0.1s;
         }
 
-        /* Style identifiers separating your internal and external stream nodes */
-        .btn-yt { background-color: #241515; border-left: 4px solid #ff3b30; }
-        .btn-vlc { background-color: #241b15; border-left: 4px solid #ff9500; }
+        /* Distinct color tags for visual separation */
+        .btn-yt { background-color: #1f1212; border-left: 4px solid #ef4444; }
+        .btn-vlc { background-color: #1f1812; border-left: 4px solid #f97316; }
 
         .btn:active {
-            background-color: #3a3a4c;
+            background-color: #272736;
             transform: scale(0.96);
         }
     </style>
 </head>
 <body>
 
-    <!-- THE VIDEO VIEWER WINDOW -->
+    <!-- VISUAL MEDIA PLAYER DISPLAY STAGE -->
     <div class="screen-container">
-        <!-- By default, our screen starts loaded up with the working SGPC Live stream link -->
-        <iframe id="display-viewport" src="https://youtube.com" allowfullscreen allow="autoplay"></iframe>
+        <!-- We use the verified secure YouTube embed path structure -->
+        <iframe id="display-viewport" src="https://youtube.com" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
 
-    <!-- LOWER SCROLLABLE BUTTON DOCK -->
+    <!-- LOWER SCROLL VIEWABLE GRID COMPONENT -->
     <div class="scrollable-channels">
 
-        <!-- CATEGORY 1: CHANNELS THAT PLAY RIGHT INSIDE THE WEB APP -->
+        <!-- SECTION A: CHANNELS PLAYING DIRECTLY INSIDE APP STAGE -->
         <div class="category-title">📺 Native Live Streams (Plays Above)</div>
         <div class="grid">
-            <!-- These links pass specific, working video IDs to the iframe box -->
             <button class="btn btn-yt" onclick="playInApp('Qv2eRRU_56A')">✨ SGPC Live</button>
             <button class="btn btn-yt" onclick="playInApp('b2_x60nNf7o')">🎵 PTC Punjabi</button>
             <button class="btn btn-yt" onclick="playInApp('9Auqeyv765k')">🇬🇧 Sky News</button>
             <button class="btn btn-yt" onclick="playInApp('2MT93N-S9_E')">🌍 Al Jazeera</button>
         </div>
 
-        <!-- CATEGORY 2: PUBLIC DOMAIN IPTV / GITHUB CHANNELS THAT LAUNCH IN VLC -->
-        <div class="category-title">🧡 Public IPTV (Launches in VLC Player App)</div>
+        <!-- SECTION B: IPTV LINKS THAT REDIRECT INTO EXTERNAL VLC APP -->
+        <div class="category-title">🧡 Public IPTV (Launches VLC Directly)</div>
         <div class="grid">
-            <!-- These channel URLs send raw data files straight out into your tablet's local VLC app -->
+            <!-- These use the simplified protocol that forces Android to open VLC directly -->
             <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇮🇳 NDTV India</button>
             <button class="btn btn-vlc" onclick="playInVLC('https://cloudfront.net')">📰 ABP News</button>
             <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🚀 NASA TV</button>
@@ -115,22 +114,20 @@
 
     </div>
 
-    <!-- APPLICATION RUNNER LOGIC -->
+    <!-- CONTROL MACHINE ROUTER LOGIC -->
     <script>
-        // Finds our video element on the web page
         const webView = document.getElementById('display-viewport');
 
-        // ROUTER 1: Changes the inner iframe video target instantly when a YouTube stream key is touched
+        // MODULE 1: Updates iframe viewport source with strict player safety parameters
         function playInApp(youtubeVideoId) {
-            webView.src = "https://youtube.com" + youtubeVideoId + "?autoplay=1";
+            webView.src = "https://www.youtube.com/embed/" + youtubeVideoId + "?autoplay=1&mute=0&rel=0";
         }
 
-        // ROUTER 2: The Android VLC Deep-Link Code.
-        // It wraps the raw public streaming links inside a system intent command.
-        // This instructs your device operating system to minimize the web browser and feed the stream directly into the VLC app engine.
+        // MODULE 2: Simple VLC Protocol stream sender.
+        // Instead of a heavy Android manifest intent code, this tells the OS 
+        // to hand the live feed directly over to the local VLC software media stream decoder.
         function playInVLC(rawStreamUrl) {
-            const vlcIntent = "intent://" + rawStreamUrl.replace(/^https?:\/\//, "") + "#Intent;scheme=http;package=org.videolan.vlc;end";
-            window.open(vlcIntent, '_blank');
+            window.location.href = "vlc://" + rawStreamUrl;
         }
     </script>
 
