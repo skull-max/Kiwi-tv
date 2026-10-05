@@ -3,233 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Core NZ TV Player</title>
+    <title>NZ Free TV Controller</title>
     <style>
-        body, html {
+        body {
             margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #000;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden;
-            color: #fff;
+            padding: 15px;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        .player-container {
-            position: relative;
+        h2 { font-size: 20px; margin-bottom: 5px; color: #007aff; }
+        p { color: #8e8e93; font-size: 14px; margin-top: 0; margin-bottom: 15px; }
+        
+        /* The player frame layout sizing */
+        .player-frame-wrapper {
             width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        /* Video element wrapper */
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        video {
-            width: 100%;
-            height: 100%;
+            max-width: 800px;
+            aspect-ratio: 16 / 9;
             background: #000;
-            object-fit: contain;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            border: 1px solid #2c2c2e;
         }
-        /* Overlay Status Alerts */
-        .status-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.75);
-            padding: 15px 25px;
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Channel grid selection cards */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            max-width: 800px;
+        }
+        .card {
+            background: #1c1c1e;
+            border: 1px solid #2c2c2e;
+            padding: 15px 10px;
             border-radius: 8px;
             text-align: center;
-            display: none;
-            z-index: 10;
-            pointer-events: none;
-            border: 1px solid #333;
-        }
-        .spinner {
-            border: 4px solid rgba(255,255,255,0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #007aff;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Control Overlay */
-        .controls-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.85));
-            padding: 20px 15px 15px 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 5;
-        }
-        .player-container:hover .controls-bar,
-        .player-container.show-controls .controls-bar {
-            opacity: 1;
-        }
-        .btn {
-            background: none;
-            border: none;
-            color: white;
             cursor: pointer;
+            font-weight: 600;
             font-size: 14px;
-            font-weight: bold;
-            padding: 8px 12px;
-            border-radius: 4px;
-            background: rgba(255,255,255,0.15);
-            transition: background 0.2s;
+            transition: transform 0.2s, background 0.2s;
         }
-        .btn:hover { background: rgba(255,255,255,0.3); }
-        .channel-title {
-            flex-grow: 1;
-            font-size: 16px;
-            font-weight: 500;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        .card:hover {
+            background: #2c2c2e;
+            transform: translateY(-2px);
+            border-color: #007aff;
+        }
+        .card.active {
+            background: #007aff;
+            color: #fff;
+            border-color: #0a84ff;
         }
     </style>
-    <!-- Include HLS.js for streaming compatibility on Android/M3U8 -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
 </head>
 <body>
 
-<div class="player-container" id="playerContainer">
-    <div class="video-wrapper">
-        <video id="videoPlayer" controls playsinline></video>
-        
-        <div class="status-overlay" id="statusOverlay">
-            <div class="spinner" id="statusSpinner"></div>
-            <div id="statusText">Loading Stream...</div>
-        </div>
+    <h2>NZ Free TV Controller</h2>
+    <p>Tap a channel card below to load the live broadcast inside the standalone frame frame.</p>
+
+    <!-- Isolated Player Frame -->
+    <div class="player-frame-wrapper">
+        <iframe id="playerFrame" src="player.html" allow="autoplay; fullscreen"></iframe>
     </div>
 
-    <!-- UI Feature Bar overlaying the frame -->
-    <div class="controls-bar">
-        <button class="btn" id="playPauseBtn">Pause</button>
-        <div class="channel-title" id="displayChannelName">No Stream Loaded</div>
-        <button class="btn" id="reloadBtn">Reload</button>
+    <!-- Modifiable Station List -->
+    <div class="grid">
+        <div class="card" onclick="changeChannel(this, 'https://play.itv.com/live/itv1', 'TVNZ 1 Alternative')">TVNZ 1</div>
+        <div class="card" onclick="changeChannel(this, 'https://bpa-live.example.com/stream2/index.m3u8', 'TVNZ 2 Demo')">TVNZ 2</div>
+        <div class="card" onclick="changeChannel(this, 'https://bpa-live.example.com/stream3/index.m3u8', 'Three Live')">Three Now</div>
+        <div class="card" onclick="changeChannel(this, 'https://bpa-live.example.com/stream4/index.m3u8', 'Whakaata Māori')">Māori TV</div>
+        <div class="card" onclick="changeChannel(this, 'https://bpa-live.example.com/stream5/index.m3u8', 'Rush Music')">Rush</div>
     </div>
-</div>
 
-<script>
-    const video = document.getElementById('videoPlayer');
-    const statusOverlay = document.getElementById('statusOverlay');
-    const statusText = document.getElementById('statusText');
-    const statusSpinner = document.getElementById('statusSpinner');
-    const displayChannelName = document.getElementById('displayChannelName');
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    const reloadBtn = document.getElementById('reloadBtn');
-    const playerContainer = document.getElementById('playerContainer');
-    
-    let hls = null;
-    let currentStreamUrl = "";
-    let controlsTimeout;
+    <script>
+        function changeChannel(element, streamUrl, channelName) {
+            // Update Active UI State
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
 
-    // Show status utility
-    function showStatus(text, showSpinner = true) {
-        statusText.innerText = text;
-        statusSpinner.style.display = showSpinner ? 'block' : 'none';
-        statusOverlay.style.display = 'block';
-    }
-
-    function hideStatus() {
-        statusOverlay.style.display = 'none';
-    }
-
-    // Direct interface function called from parent index.html window/iframe context
-    window.loadStream = function(url, name) {
-        if (!url) return;
-        currentStreamUrl = url;
-        displayChannelName.innerText = name || "Live Channel";
-        showStatus("Loading: " + (name || "Stream") + "...");
-        
-        // Reset existing HLS instance
-        if (hls) {
-            hls.destroy();
-            hls = null;
-        }
-
-        if (Hls.isSupported()) {
-            hls = new Hls({
-                maxBufferLength: 10,
-                enableWorker: true,
-                lowLatencyMode: true
-            });
-            hls.loadSource(url);
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                video.play().catch(() => {
-                    showStatus("Tap Play to Watch", false);
-                });
-            });
-            hls.on(Hls.Events.ERROR, function(event, data) {
-                if (data.fatal) {
-                    showStatus("Stream Error. Retrying...", true);
-                    hls.recoverMediaError();
+            // Send URL and Details directly to the embedded player
+            const iframe = document.getElementById('playerFrame');
+            if (iframe.contentWindow) {
+                // Method 1: Direct function execution across same origin
+                try {
+                    iframe.contentWindow.loadStream(streamUrl, channelName);
+                } catch(e) {
+                    // Method 2: Safe postMessage fallback for absolute isolation cross-origin
+                    iframe.contentWindow.postMessage({
+                        type: "LOAD_STREAM",
+                        url: streamUrl,
+                        name: channelName
+                    }, "*");
                 }
-            });
-        } 
-        // Native fallback (iOS / Safari / some older Android engines)
-        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = url;
-            video.addEventListener('loadedmetadata', function() {
-                video.play().catch(() => {
-                    showStatus("Tap Play to Watch", false);
-                });
-            });
-        } else {
-            showStatus("Streaming not supported on this browser.", false);
+            }
         }
-    };
 
-    // Video Event Handlers for Status Screen
-    video.addEventListener('waiting', () => showStatus("Buffering..."));
-    video.addEventListener('playing', () => { hideStatus(); playPauseBtn.innerText = "Pause"; });
-    video.addEventListener('pause', () => playPauseBtn.innerText = "Play");
-
-    // Feature Controls UI Interaction
-    playPauseBtn.addEventListener('click', () => {
-        if (video.paused) video.play();
-        else video.pause();
-    });
-
-    reloadBtn.addEventListener('click', () => {
-        if (currentStreamUrl) window.loadStream(currentStreamUrl, displayChannelName.innerText);
-    });
-
-    // Handle Mobile tap to reveal controls
-    function triggerControls() {
-        playerContainer.classList.add('show-controls');
-        clearTimeout(controlsTimeout);
-        controlsTimeout = setTimeout(() => {
-            playerContainer.classList.remove('show-controls');
-        }, 3000);
-    }
-    playerContainer.addEventListener('click', triggerControls);
-    playerContainer.addEventListener('touchstart', triggerControls);
-
-    // Listen for commands posted via postMessage if running across strict domains
-    window.addEventListener("message", function(event) {
-        if (event.data && event.data.type === "LOAD_STREAM") {
-            window.loadStream(event.data.url, event.data.name);
-        }
-    });
-</script>
+        // Auto-load first channel on index layout ready
+        window.addEventListener('load', () => {
+            const firstCard = document.querySelector('.card');
+            if(firstCard) firstCard.click();
+        });
+    </script>
 </body>
 </html>
