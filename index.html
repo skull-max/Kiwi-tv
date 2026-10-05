@@ -3,39 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Master India IPTV Terminal</title>
+    <title>Kiwi & Indian IPTV Engine</title>
     
-    <!-- Programmatic HLS stream unpacker engine -->
+    <!-- Production HLS video decoding engine -->
     <script src="https://jsdelivr.net"></script>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            background-color: #09090b;
+            background-color: #0c0c0f;
             color: #ffffff;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; /* Stops the overall browser screen from bouncing glitchily */
         }
 
-        /* SCREEN PLAYBACK PORT */
-        .display-stage {
-            flex: 1;
+        /* 1. FIXED TOP STAGE: The video viewer stays locked on top of the phone screen */
+        .video-viewport-stage {
             width: 100%;
             background-color: #000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            aspect-ratio: 16/9;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             position: relative;
         }
 
         video, iframe {
             width: 100%;
             height: 100%;
-            aspect-ratio: 16/9;
             border: none;
             position: absolute;
             top: 0;
@@ -43,180 +41,156 @@
             display: none;
         }
 
-        /* CONTROLS ZONE AT THE BOTTOM */
-        .control-dock {
-            background-color: #121216;
-            border-top: 1px solid #272730;
-            padding: 15px 10px 25px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+        /* 2. SCROLLABLE CONTENT BODY: Allows smooth touch scrolling for endless channel options */
+        .main-scroll-body {
+            flex: 1;
+            overflow-y: auto; /* Forces vertical scrolling inside this container panel */
+            padding: 15px 15px 40px 15px;
+            -webkit-overflow-scrolling: touch; /* Ensures fluid touch friction on mobile screens */
         }
 
-        .row-label {
+        .category-block {
+            margin-bottom: 20px;
+        }
+
+        .row-heading {
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             color: #71717a;
             letter-spacing: 1px;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #1e1e24;
+            padding-bottom: 4px;
         }
 
-        .dock-row {
+        /* Clean multi-column grid layout */
+        .channel-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
         }
 
-        .dock-btn {
-            background-color: #1e1e24;
+        .channel-btn {
+            background-color: #16161c;
             color: #ffffff;
-            border: 1px solid #2d2d38;
-            padding: 16px 5px;
+            border: 1px solid #272732;
+            padding: 18px 8px;
             font-size: 13px;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.1s ease;
+            text-align: center;
+            transition: background-color 0.1s;
         }
 
-        /* Accent indicators for your video sources */
-        .btn-cdn { border-left: 3px solid #3b82f6; }
-        .btn-yt { border-left: 3px solid #ef4444; }
+        /* Color-coded tags to clearly partition your networks */
+        .btn-nz { border-left: 3px solid #ff4a4a; }
+        .btn-ind { border-left: 3px solid #ff9900; }
+        .btn-test { border-left: 3px solid #a855f7; }
 
-        .dock-btn:active {
-            transform: scale(0.95);
-            background-color: #272732;
-        }
-
-        /* INTERACTIVE MANUAL TESTING BAR */
-        .tester-bar {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-        }
-        .tester-input {
-            flex: 1;
-            background-color: #18181b;
-            border: 1px solid #272730;
-            padding: 10px;
-            color: #ffffff;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-        .tester-btn {
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
+        .channel-btn:active {
+            background-color: #27273a;
+            transform: scale(0.96);
         }
     </style>
 </head>
 <body>
 
-    <!-- VIDEO VIEWPORT AREA -->
-    <div class="display-stage">
-        <video id="native-player" controls autoplay playsinline></video>
-        <iframe id="youtube-player" allowfullscreen allow="autoplay"></iframe>
+    <!-- THE LOCKED VISUAL MONITOR BOX -->
+    <div class="video-viewport-stage">
+        <video id="native-engine-view" controls autoplay playsinline></video>
+        <iframe id="youtube-engine-view" allowfullscreen allow="autoplay"></iframe>
     </div>
 
-    <!-- LOWER SYSTEM CONTROL CONSOLE -->
-    <div class="control-dock">
+    <!-- THE SCROLLABLE GRID LOWER HALF -->
+    <div class="main-scroll-body">
         
-        <!-- SECTION 1: CDN RAW STREAMS FROM M3U8 -->
-        <div>
-            <div class="row-label">GitHub Playlist Raw CDN Feeds</div>
-            <div class="dock-row">
-                <button class="dock-btn btn-cdn" onclick="playRawM3U8('https://akamaized.net')">🇮🇳 NDTV India</button>
-                <button class="dock-btn btn-cdn" onclick="playRawM3U8('https://cloudfront.net')">📰 ABP News</button>
-                <button class="dock-btn btn-cdn" onclick="playRawM3U8('https://cloudfront.net')">⚡ ABP Ananda</button>
+        <!-- SECTION 1: GLOBAL TESTING LOOPS -->
+        <div class="category-block">
+            <div class="row-heading">🛠️ Live Player Test Feeds (Bulletproof)</div>
+            <div class="channel-grid">
+                <!-- Using an ultra-stable public HLS testing feed to check player integrity -->
+                <button class="channel-btn btn-test" onclick="runDirectM3U8('https://mux.dev')">🎬 Test Stream 1</button>
+                <button class="channel-btn btn-test" onclick="runDirectM3U8('https://longtailvideo.com')">📊 Test Stream 2</button>
             </div>
         </div>
 
-        <!-- SECTION 2: LIVE YOUTUBE VIDEO TARGETS -->
-        <div>
-            <div class="row-label">YouTube Live Channels (Video IDs)</div>
-            <div class="dock-row">
-                <button class="dock-btn btn-yt" onclick="playYouTube('Qv2eRRU_56A')">✨ SGPC Live</button>
-                <button class="dock-btn btn-yt" onclick="playYouTube('sYZtOFzM78M')">🌏 India Today</button>
-                <button class="dock-btn btn-yt" onclick="playYouTube('Nq2wYlWFucg')">🔥 Aaj Tak</button>
+        <!-- SECTION 2: INDIAN POPULAR SELECTIONS -->
+        <div class="category-block">
+            <div class="row-heading">🇮🇳 Indian Live Broadcasts</div>
+            <div class="channel-grid">
+                <!-- Direct Video IDs that bypass browser CORS locks completely -->
+                <button class="channel-btn btn-ind" onclick="runYouTube('Qv2eRRU_56A')">✨ SGPC Live</button>
+                <button class="channel-btn btn-ind" onclick="runYouTube('b2_x60nNf7o')">🎵 PTC Punjabi</button>
+                <button class="channel-btn btn-ind" onclick="runYouTube('sYZtOFzM78M')">📰 India Today</button>
+                <button class="channel-btn btn-ind" onclick="runYouTube('Nq2wYlWFucg')">🔥 Aaj Tak</button>
             </div>
         </div>
 
-        <!-- SECTION 3: EXPERIMENTAL MANUAL TESTING PORT -->
-        <div>
-            <div class="row-label">Live Link Code Testing Port</div>
-            <div class="tester-bar">
-                <input type="text" id="custom-url-field" class="tester-input" placeholder="Paste any raw .m3u8 link or YouTube Video ID here...">
-                <button class="tester-btn" onclick="testCustomInput()">Run</button>
+        <!-- SECTION 3: KIWI PORTAL HOOKS -->
+        <div class="category-block">
+            <div class="row-heading">🇳🇿 New Zealand Channels (System Intent Apps)</div>
+            <div class="channel-grid">
+                <!-- These wake up your tablet's local app directories safely -->
+                <button class="channel-btn btn-nz" onclick="runAndroidApp('nz.co.dishtv.FreeviewLiveTV')">📺 Freeview App</button>
+                <button class="channel-btn btn-nz" onclick="runAndroidApp('com.google.android.youtube')">🔴 YouTube App</button>
             </div>
         </div>
 
     </div>
 
+    <!-- MAIN PLAYER CORE ROUTER -->
     <script>
-        const videoScreen = document.getElementById('native-player');
-        const ytScreen = document.getElementById('youtube-player');
-        let currentHlsInstance = null;
+        const cdnVideo = document.getElementById('native-engine-view');
+        const ytIframe = document.getElementById('youtube-engine-view');
+        let activeHlsController = null;
 
-        function clearScreens() {
-            // Safely detach any old video streams running in the background memory
-            if (currentHlsInstance) {
-                currentHlsInstance.destroy();
-                currentHlsInstance = null;
+        function purgeStage() {
+            if (activeHlsController) {
+                activeHlsController.destroy();
+                activeHlsController = null;
             }
-            videoScreen.style.display = 'none';
-            videoScreen.pause();
-            videoScreen.src = '';
+            cdnVideo.style.display = 'none';
+            cdnVideo.pause();
+            cdnVideo.src = '';
             
-            ytScreen.style.display = 'none';
-            ytScreen.src = '';
+            ytIframe.style.display = 'none';
+            ytIframe.src = '';
         }
 
-        // Handler Module 1: Decodes Direct CDN Streams (.m3u8 links)
-        function playRawM3U8(streamUrl) {
-            clearScreens();
-            videoScreen.style.display = 'block';
+        // Action Core 1: Compiles Raw HLS Stream feeds (.m3u8 files)
+        function runDirectM3U8(streamUrl) {
+            purgeStage();
+            cdnVideo.style.display = 'block';
 
             if (Hls.isSupported()) {
-                currentHlsInstance = new Hls();
-                currentHlsInstance.loadSource(streamUrl);
-                currentHlsInstance.attachMedia(videoScreen);
-                currentHlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                    videoScreen.play().catch(e => console.log("Autoplay context blocker tripped: ", e));
+                activeHlsController = new Hls();
+                activeHlsController.loadSource(streamUrl);
+                activeHlsController.attachMedia(cdnVideo);
+                activeHlsController.on(Hls.Events.MANIFEST_PARSED, function() {
+                    cdnVideo.play().catch(e => console.log("Blocked browser autoplay safety trigger."));
                 });
-            } else if (videoScreen.canPlayType('application/x-mpegURL')) {
-                videoScreen.src = streamUrl;
-                videoScreen.play();
+            } else if (cdnVideo.canPlayType('application/x-mpegURL')) {
+                cdnVideo.src = streamUrl;
+                cdnVideo.play();
             }
         }
 
-        // Handler Module 2: Loads Unblocked Embed Video IDs
-        function playYouTube(videoId) {
-            clearScreens();
-            ytScreen.style.display = 'block';
-            ytScreen.src = "https://youtube.com" + videoId + "?autoplay=1&rel=0";
+        // Action Core 2: Hooks Direct Embed YouTube Video IDs
+        function runYouTube(videoId) {
+            purgeStage();
+            ytIframe.style.display = 'block';
+            ytIframe.src = "https://youtube.com" + videoId + "?autoplay=1&rel=0";
         }
 
-        // Developer Tool Logic: Analyzes what link type you paste and funnels it to the correct engine
-        function testCustomInput() {
-            const inputData = document.getElementById('custom-url-field').value.trim();
-            if (!inputData) return;
-
-            if (inputData.includes('.m3u8')) {
-                playRawM3U8(inputData);
-            } else {
-                // If it doesn't look like a direct file link, assume it is a raw YouTube Video ID sequence
-                playYouTube(inputData);
-            }
+        // Action Core 3: Deep links out to tablet applications
+        function runAndroidApp(packageName) {
+            window.open("intent://#Intent;scheme=android-app;package=" + packageName + ";end", '_blank');
         }
 
-        // Automatically fire up NDTV India stream on initial application launch
-        playRawM3U8('https://akamaized.net');
+        // AUTO-LAUNCH SEQUENCE: App automatically spins up Test Stream 1 to ensure instant execution
+        runDirectM3U8('https://mux.dev');
     </script>
 </body>
 </html>
