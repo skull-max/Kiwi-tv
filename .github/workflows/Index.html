@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+<head>
+    <meta charset="UTF-8">
+    <!-- This tag prevents text from looking tiny on tablet screens -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiwi Freeview Player</title>
+    
+    <!-- 1. VideoJS Library: Standard HTML5 video cannot read live TV streams (.m3u8 files). 
+         We pull this library from a free server to handle the live NZ video feeds safely. -->
+    <link href="https://zencdn.net" rel="stylesheet" />
+
+    <!-- 2. CSS STYLING: This shapes our tablet layout -->
+    <style>
+        body {
+            background-color: #121212; /* Dark mode background */
+            color: #ffffff;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+
+        /* Container keeping our video player centered and sharp */
+        .video-box {
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .video-js {
+            width: 100%;
+            aspect-ratio: 16/9; /* Perfect widescreen layout */
+        }
+
+        /* Grid layout for your channel buttons */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* Large, tablet touch-friendly button layouts */
+        .btn-channel {
+            background-color: #242424;
+            color: white;
+            border: 2px solid #3a3a3a;
+            padding: 20px 10px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Visual reaction when your finger taps the button */
+        .btn-channel:active {
+            background-color: #0084ff;
+            border-color: #ffffff;
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🇳🇿 Kiwi Freeview Hub</h1>
+
+    <!-- THE VIDEO PLAYER COMPONENT -->
+    <div class="video-box">
+        <video id="tv-screen" class="video-js vjs-default-skin" controls preload="auto" autocomplete="off">
+            <!-- Defaulting to TVNZ 1 on launch -->
+            <source src="https://mjh.nz" type="application/x-mpegURL">
+        </video>
+    </div>
+
+    <!-- THE CHANNEL SELECTION BUTTONS -->
+    <div class="grid-layout">
+        <!-- Clicking a button triggers our JavaScript function down below -->
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">TVNZ 1</button>
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">TVNZ 2</button>
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Duke</button>
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Three</button>
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Bravo</button>
+        <button class="btn-channel" onclick="tuneChannel('https://mjh.nz')">Whakaata Māori</button>
+    </div>
+
+    <!-- 3. JAVASCRIPT LOGIC: The brain engine -->
+    <script src="https://zencdn.net"></script>
+    <script>
+        // Initialize the VideoJS engine on our "tv-screen" element
+        var liveViewer = videojs('tv-screen');
+
+        // This function intercepts the stream URL when a button is clicked
+        function tuneChannel(streamUrl) {
+            liveViewer.src({
+                src: streamUrl,
+                type: 'application/x-mpegURL'
+            });
+            liveViewer.play(); // Auto-start the video playback
+        }
+    </script>
+</body>
+</html>
