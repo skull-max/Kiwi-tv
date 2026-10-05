@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Free TV Player</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lightweight Free TV Hub</title>
     <style>
+        /* CSS reset to stop the page from stretching or glitching */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            background-color: #121212;
+            background-color: #111115;
             color: #ffffff;
             font-family: Arial, sans-serif;
             display: flex;
@@ -17,14 +18,15 @@
             overflow: hidden;
         }
 
-        /* 1. FIXED TOP SCREEN: Keeps the player stuck to the top */
-        .video-container {
+        /* SCREEN CONTAINER: Stays locked at the top of your phone or tablet screen */
+        .screen-container {
             width: 100%;
             aspect-ratio: 16/9;
             background-color: #000000;
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
         iframe {
@@ -33,86 +35,102 @@
             border: none;
         }
 
-        /* 2. SCROLLABLE BUTTONS LIST: Scrolls smoothly underneath on phone or tablet */
-        .buttons-list {
+        /* SCROLLABLE GRID BOX: Allows effortless touch scrolling underneath the video window */
+        .scrollable-channels {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
-            padding-bottom: 50px; /* Space at bottom so it doesn't clip */
+            padding-bottom: 40px;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .section-title {
-            font-size: 12px;
-            color: #888888;
-            margin-bottom: 10px;
+        .category-title {
+            font-size: 11px;
+            color: #8e8e93;
+            margin-bottom: 8px;
             font-weight: bold;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 Buttons per row on phone */
+            grid-template-columns: repeat(2, 1fr); /* Forms 2 clean columns on standard phone viewports */
             gap: 10px;
             margin-bottom: 25px;
         }
 
         .btn {
-            background-color: #222222;
             color: #ffffff;
-            border: 1px solid #333333;
-            padding: 20px 10px;
-            font-size: 15px;
+            border: 1px solid #2c2c35;
+            padding: 18px 10px;
+            font-size: 14px;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             text-align: center;
+            transition: background-color 0.1s;
         }
 
+        /* Style identifiers separating your internal and external stream nodes */
+        .btn-yt { background-color: #241515; border-left: 4px solid #ff3b30; }
+        .btn-vlc { background-color: #241b15; border-left: 4px solid #ff9500; }
+
         .btn:active {
-            background-color: #ff0000; /* Turns red when tapped */
+            background-color: #3a3a4c;
+            transform: scale(0.96);
         }
     </style>
 </head>
 <body>
 
-    <!-- VIDEO STAGE LOCKED AT TOP -->
-    <div class="video-container">
-        <!-- Starts automatically playing the SGPC Live channel stream -->
-        <iframe id="tv-screen" src="https://youtube.com" allowfullscreen allow="autoplay"></iframe>
+    <!-- THE VIDEO VIEWER WINDOW -->
+    <div class="screen-container">
+        <!-- By default, our screen starts loaded up with the working SGPC Live stream link -->
+        <iframe id="display-viewport" src="https://youtube.com" allowfullscreen allow="autoplay"></iframe>
     </div>
 
-    <!-- BUTTONS SCROLL UNDERNEATH -->
-    <div class="buttons-list">
+    <!-- LOWER SCROLLABLE BUTTON DOCK -->
+    <div class="scrollable-channels">
 
-        <div class="section-title">Popular Free Channels</div>
+        <!-- CATEGORY 1: CHANNELS THAT PLAY RIGHT INSIDE THE WEB APP -->
+        <div class="category-title">📺 Native Live Streams (Plays Above)</div>
         <div class="grid">
-            <!-- These use the lightweight Channel IDs to fetch whatever is live right now -->
-            <button class="btn" onclick="changeChannel('UCLXp8k_A3_kS08v_MvUo_pQ')">✨ SGPC Live</button>
-            <button class="btn" onclick="changeChannel('UCHJW1_0oPzYZl89wX_jhrgA')">🎵 PTC Punjabi</button>
-            <button class="btn" onclick="changeChannel('UCqhnX4jA0A5paNd1v-zEysw')">🇬🇧 Sky News</button>
-            <button class="btn" onclick="changeChannel('UC8p1vwvWtl6T73JiExfUx1g')">🌍 Al Jazeera</button>
-            <button class="btn" onclick="changeChannel('UC9s9Z3A15Nf5M_8V6Xw')">🇩🇪 DW News</button>
-            <button class="btn" onclick="changeChannel('UCX6BOlQ2HFxs36v_sYfHwTw')">🇮🇳 Aaj Tak</button>
+            <!-- These links pass specific, working video IDs to the iframe box -->
+            <button class="btn btn-yt" onclick="playInApp('Qv2eRRU_56A')">✨ SGPC Live</button>
+            <button class="btn btn-yt" onclick="playInApp('b2_x60nNf7o')">🎵 PTC Punjabi</button>
+            <button class="btn btn-yt" onclick="playInApp('9Auqeyv765k')">🇬🇧 Sky News</button>
+            <button class="btn btn-yt" onclick="playInApp('2MT93N-S9_E')">🌍 Al Jazeera</button>
         </div>
 
-        <div class="section-title">New Zealand Freeview Links</div>
+        <!-- CATEGORY 2: PUBLIC DOMAIN IPTV / GITHUB CHANNELS THAT LAUNCH IN VLC -->
+        <div class="category-title">🧡 Public IPTV (Launches in VLC Player App)</div>
         <div class="grid">
-            <!-- Launches your tablet's local apps directly to watch NZ TV without blocks -->
-            <button class="btn" onclick="openApp('nz.co.dishtv.FreeviewLiveTV')">📺 Freeview App</button>
-            <button class="btn" onclick="openApp('com.google.android.youtube')">🔴 YouTube App</button>
+            <!-- These channel URLs send raw data files straight out into your tablet's local VLC app -->
+            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇮🇳 NDTV India</button>
+            <button class="btn btn-vlc" onclick="playInVLC('https://cloudfront.net')">📰 ABP News</button>
+            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🚀 NASA TV</button>
+            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇯🇵 NHK World</button>
         </div>
 
     </div>
 
+    <!-- APPLICATION RUNNER LOGIC -->
     <script>
-        // Simply tells the iframe to drop the old stream and load the new one instantly
-        function changeChannel(channelId) {
-            document.getElementById('tv-screen').src = "https://youtube.com" + channelId + "&autoplay=1";
+        // Finds our video element on the web page
+        const webView = document.getElementById('display-viewport');
+
+        // ROUTER 1: Changes the inner iframe video target instantly when a YouTube stream key is touched
+        function playInApp(youtubeVideoId) {
+            webView.src = "https://youtube.com" + youtubeVideoId + "?autoplay=1";
         }
 
-        // Bypasses the website completely to open your tablet's apps
-        function openApp(packageName) {
-            window.open("intent://#Intent;scheme=android-app;package=" + packageName + ";end", '_blank');
+        // ROUTER 2: The Android VLC Deep-Link Code.
+        // It wraps the raw public streaming links inside a system intent command.
+        // This instructs your device operating system to minimize the web browser and feed the stream directly into the VLC app engine.
+        function playInVLC(rawStreamUrl) {
+            const vlcIntent = "intent://" + rawStreamUrl.replace(/^https?:\/\//, "") + "#Intent;scheme=http;package=org.videolan.vlc;end";
+            window.open(vlcIntent, '_blank');
         }
     </script>
 
