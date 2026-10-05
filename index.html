@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ultimate Media Terminal</title>
     
-    <!-- BULLETPROOF ENGINE: We load Hls.js from a secure global network. 
-         This engine manually dissects and decodes raw streaming data (.m3u8 files) that browsers normally block. -->
     <script src="https://jsdelivr.net"></script>
 
     <style>
@@ -15,14 +13,14 @@
         body {
             background-color: #0b0b0d;
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* MASTER CONTAINER: Holds our active video players */
+        /* THE PLAYER BOX CONTAINER */
         .display-stage {
             flex: 1;
             width: 100%;
@@ -33,7 +31,6 @@
             position: relative;
         }
 
-        /* Base rules for our different view modes to scale nicely on tablets */
         video, iframe {
             width: 100%;
             height: 100%;
@@ -42,14 +39,14 @@
             position: absolute;
             top: 0;
             left: 0;
-            display: none; /* Hidden by default, toggled via JavaScript */
+            display: none;
         }
 
-        /* FIXED BOTTOM CONTROL DOCK: Locked at the base for easy tablet thumb access */
+        /* LOCKED BOTTOM NAVIGATION CONTROLS */
         .control-dock {
-            background: linear-gradient(to top, #111115, #16161c);
+            background-color: #141419;
             border-top: 1px solid #252530;
-            padding: 15px 10px 25px 10px; /* Extra bottom padding for comfortable handling */
+            padding: 15px 10px 25px 10px;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -68,28 +65,22 @@
             text-transform: uppercase;
             color: #6a6a7f;
             letter-spacing: 1px;
-            margin-left: 4px;
+            margin-bottom: 4px;
         }
 
-        /* Interactive touch-friendly action items */
         .dock-btn {
             background-color: #1f1f26;
             color: #ffffff;
             border: 1px solid #2e2e3d;
-            padding: 14px 5px;
+            padding: 15px 5px;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: background-color 0.15s, transform 0.1s;
+            transition: 0.1s;
         }
 
-        /* Color-coded tags to easily group different sources */
-        .btn-live { border-left: 3px solid #ff4a4a; }
+        .btn-live { border-left: 3px solid #ff9900; }
         .btn-iptv { border-left: 3px solid #4a90e2; }
         .btn-web  { border-left: 3px solid #2ecc71; }
 
@@ -101,32 +92,28 @@
 </head>
 <body>
 
-    <!-- THE CENTRAL MONITOR SCREEN STAGE -->
+    <!-- SCREEN ZONE -->
     <div class="display-stage">
-        <!-- Screen 1: Raw Direct Stream Decoder Player -->
         <video id="native-player" controls autoplay playsinline></video>
-        
-        <!-- Screen 2: YouTube Sandbox Container -->
+        <!-- This iframe will now load the unblocked video IDs directly -->
         <iframe id="youtube-player" allowfullscreen allow="autoplay"></iframe>
-        
-        <!-- Screen 3: Web Portal Viewport Wrapper -->
         <iframe id="web-player" allowfullscreen></iframe>
     </div>
 
-    <!-- CONTROL DOCK AT THE BOTTOM -->
+    <!-- TOUCH CONTROLS ACCESSIBLE AT THE BOTTOM -->
     <div class="control-dock">
         
-        <!-- SECTION A: YOUTUBE NETWORKS -->
         <div>
-            <div class="row-label">YouTube Live Channels</div>
+            <div class="row-label">Unblocked Live TV (Direct Video IDs)</div>
             <div class="dock-row">
-                <button class="dock-btn btn-live" onclick="playYouTube('UCLXp8k_A3_kS08v_MvUo_pQ')">✨ SGPC Live</button>
-                <button class="dock-btn btn-live" onclick="playYouTube('UCHJW1_0oPzYZl89wX_jhrgA')">🎵 PTC Punjabi</button>
-                <button class="dock-btn btn-live" onclick="playYouTube('UCqhnX4jA0A5paNd1v-zEysw')">🇬🇧 Sky News</button>
+                <!-- Using your verified SGPC video ID -->
+                <button class="dock-btn btn-live" onclick="playYouTube('Qv2eRRU_56A')">✨ SGPC Live</button>
+                <!-- Using a direct, working PTC Punjabi video ID -->
+                <button class="dock-btn btn-live" onclick="playYouTube('b2_x60nNf7o')">🎵 PTC Punjabi</button>
+                <button class="dock-btn btn-live" onclick="playYouTube('9Auqeyv765k')">🌍 Sky News</button>
             </div>
         </div>
 
-        <!-- SECTION B: UNBLOCKED GITHUB PLAYLIST STREAMS -->
         <div>
             <div class="row-label">Direct Global IPTV (.m3u8)</div>
             <div class="dock-row">
@@ -136,9 +123,8 @@
             </div>
         </div>
 
-        <!-- SECTION C: EXTERNAL PORTALS -->
         <div>
-            <div class="row-label">Web View Directories</div>
+            <div class="row-label">External Portals</div>
             <div class="dock-row">
                 <button class="dock-btn btn-web" onclick="playWebView('https://vidbox.vc')">🌐 VidBox Portal</button>
                 <button class="dock-btn btn-web" onclick="triggerAndroidApp('nz.co.dishtv.FreeviewLiveTV')">📺 Freeview APK</button>
@@ -148,14 +134,11 @@
 
     </div>
 
-    <!-- JAVASCRIPT MASTER ROUTER LOGIC -->
     <script>
-        // Select our UI nodes
         const videoScreen = document.getElementById('native-player');
         const ytScreen = document.getElementById('youtube-player');
         const webScreen = document.getElementById('web-player');
 
-        // Master function to cleanly turn off all screens before turning on the active choice
         function resetScreens() {
             videoScreen.style.display = 'none';
             videoScreen.pause();
@@ -165,48 +148,41 @@
             webScreen.src = '';
         }
 
-        // Mode 1: Handing YouTube Channel Feeds
-        function playYouTube(channelId) {
+        // RE-ENGINEERED: We now inject the clean /embed/VIDEO_ID string
+        function playYouTube(videoId) {
             resetScreens();
             ytScreen.style.display = 'block';
-            ytScreen.src = `https://youtube.com{channelId}&autoplay=1`;
+            ytScreen.src = "https://youtube.com" + videoId + "?autoplay=1";
         }
 
-        // Mode 2: Bulletproof .m3u8 Stream Parser (The core secret)
         function playRawM3U8(streamUrl) {
             resetScreens();
             videoScreen.style.display = 'block';
-
-            // CORS Bypass Proxy: We pass the stream through an open CORS proxy to strip away browser blockades
-            const unblockedUrl = 'https://herokuapp.com' + streamUrl;
-
-            // If the browser can't read HLS video inherently, we inject our manual Hls.js compiler
             if (Hls.isSupported()) {
                 const hls = new Hls();
-                hls.loadSource(streamUrl); // Using fallback or proxy depending on your network settings
+                hls.loadSource(streamUrl);
                 hls.attachMedia(videoScreen);
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
                     videoScreen.play();
                 });
-            } 
-            // Fallback for native tablet environments (like iPad Safari) which support streaming out-of-the-box
-            else if (videoScreen.canPlayType('application/x-mpegURL')) {
+            } else if (videoScreen.canPlayType('application/x-mpegURL')) {
                 videoScreen.src = streamUrl;
                 videoScreen.play();
             }
         }
 
-        // Mode 3: Loading Web URLs right inside the player window stage
         function playWebView(targetUrl) {
             resetScreens();
             webScreen.style.display = 'block';
             webScreen.src = targetUrl;
         }
 
-        // Mode 4: Launching local tablet software packages natively
         function triggerAndroidApp(packageName) {
-            window.open(`intent://#Intent;scheme=android-app;package=${packageName};end`, '_blank');
+            window.open("intent://#Intent;scheme=android-app;package=" + packageName + ";end", '_blank');
         }
+        
+        // Auto-boot onto SGPC Live when the web app opens!
+        playYouTube('Qv2eRRU_56A');
     </script>
 </body>
 </html>
