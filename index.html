@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lightweight Free TV Hub</title>
+    <title>Universal Multi-Source Matrix</title>
+    
+    <!-- We load Hls.js to handle the raw public .m3u8 CDN links internally when chosen from the dropdowns -->
+    <script src="https://jsdelivr.net"></script>
+
     <style>
-        /* CSS reset rules ensuring full split-screen scaling */
+        /* CSS reset layer preventing layout collision and viewport clipping */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            background-color: #0d0d11;
+            background-color: #0c0c11;
             color: #ffffff;
             font-family: Arial, sans-serif;
             display: flex;
@@ -18,7 +22,7 @@
             overflow: hidden;
         }
 
-        /* TOP SCREEN PORTAL: Widescreen box locked to the top of your tablet view */
+        /* TOP VIEWER STAGE: Keeps your TV view locked on top of mobile layouts */
         .screen-container {
             width: 100%;
             aspect-ratio: 16/9;
@@ -29,111 +33,209 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.6);
         }
 
-        iframe {
+        video, iframe {
             width: 100%;
             height: 100%;
             border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
         }
 
-        /* SCROLLABLE GRID ZONE: Allows endless scrolling for channels underneath */
+        /* LOWER SCROLL GRID: Scrollable card layout below the player screen */
         .scrollable-channels {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
             padding-bottom: 50px;
-            -webkit-overflow-scrolling: touch; /* Fluid scrolling mechanics */
+            -webkit-overflow-scrolling: touch;
         }
 
         .category-title {
             font-size: 11px;
             color: #888892;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            border-bottom: 1px solid #22222b;
+            padding-bottom: 4px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 Column split setup */
-            gap: 10px;
+            grid-template-columns: repeat(2, 1fr); /* Forms 2 clean columns on phones/tablets */
+            gap: 12px;
             margin-bottom: 25px;
         }
 
-        .btn {
+        /* Modular container containing channel action key and source menu together */
+        .channel-card {
+            background-color: #171722;
+            border: 1px solid #29293a;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn-play {
+            background-color: #252538;
             color: #ffffff;
-            border: 1px solid #282835;
-            padding: 18px 10px;
+            border: 1px solid #3d3d5c;
+            padding: 15px 5px;
             font-size: 14px;
             font-weight: bold;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             text-align: center;
             transition: background-color 0.1s;
         }
 
-        /* Distinct color tags for visual separation */
-        .btn-yt { background-color: #1f1212; border-left: 4px solid #ef4444; }
-        .btn-vlc { background-color: #1f1812; border-left: 4px solid #f97316; }
+        .btn-play:active {
+            background-color: #3b82f6; /* Flash blue on finger touch execution */
+        }
 
-        .btn:active {
-            background-color: #272736;
-            transform: scale(0.96);
+        /* Dropdown selection bar custom design mapping */
+        .source-selector {
+            background-color: #0d0d14;
+            color: #a1a1aa;
+            border: 1px solid #29293a;
+            padding: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 6px;
+            width: 100%;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .source-selector:focus {
+            border-color: #3b82f6;
+            color: #ffffff;
         }
     </style>
 </head>
 <body>
 
-    <!-- VISUAL MEDIA PLAYER DISPLAY STAGE -->
+    <!-- VISUAL HUB DISPLAY PORTAL -->
     <div class="screen-container">
-        <!-- FIXED DEFAULT CONTENT: Automatically starts with the working SGPC Live Stream link on load -->
-        <iframe id="display-viewport" src="https://youtube.com" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        <video id="native-engine-display" controls autoplay playsinline></video>
+        <iframe id="youtube-engine-display" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
 
-    <!-- LOWER SCROLL VIEWABLE GRID COMPONENT -->
+    <!-- LOWER SELECTION MATRIX -->
     <div class="scrollable-channels">
 
-        <!-- SECTION A: CHANNELS PLAYING DIRECTLY INSIDE APP STAGE -->
-        <div class="category-title">📺 Native Live Streams (Plays Above)</div>
+        <div class="category-title">📺 Multi-Source Channel Matrix (4 Links Each)</div>
         <div class="grid">
-            <!-- FIXED LINK ROUTING: Swapped out dead video codes for permanent, unexpiring network account channels -->
-            <button class="btn btn-yt" onclick="playVideoID('Qv2eRRU_56A')">✨ SGPC Live</button>
-            <button class="btn btn-yt" onclick="playChannelLive('UCHJW1_0oPzYZl89wX_jhrgA')">🎵 PTC Punjabi</button>
-            <button class="btn btn-yt" onclick="playChannelLive('UCqhnX4jA0A5paNd1v-zEysw')">🇬🇧 Sky News</button>
-            <button class="btn btn-yt" onclick="playChannelLive('UCNye-wNBqNL5ZzHSJj3l8Bg')">🌍 Al Jazeera</button>
-        </div>
 
-        <!-- SECTION B: IPTV LINKS THAT REDIRECT INTO EXTERNAL VLC APP -->
-        <div class="category-title">🧡 Public IPTV (Launches VLC Directly)</div>
-        <div class="grid">
-            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇮🇳 NDTV India</button>
-            <button class="btn btn-vlc" onclick="playInVLC('https://cloudfront.net')">📰 ABP News</button>
-            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🚀 NASA TV</button>
-            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇯🇵 NHK World</button>
+            <!-- CARD MODULE 1: SGPC LIVE -->
+            <div class="channel-card">
+                <button class="btn-play" onclick="tuneMatrixChannel('sgpc')">✨ SGPC Live</button>
+                <select id="src-sgpc" class="source-selector">
+                    <option value="yt:Qv2eRRU_56A">Option 1: YouTube Live</option>
+                    <option value="yt:vFXADUnLJ89FMc7y">Option 2: Backup Live</option>
+                    <option value="m3u:https://mux.dev">Option 3: Mux CDN Test</option>
+                    <option value="m3u:https://longtailvideo.com">Option 4: BipBop CDN Test</option>
+                </select>
+            </div>
+
+            <!-- CARD MODULE 2: PTC PUNJABI -->
+            <div class="channel-card">
+                <button class="btn-play" onclick="tuneMatrixChannel('ptc')">🎵 PTC Punjabi</button>
+                <select id="src-ptc" class="source-selector">
+                    <option value="yt:b2_x60nNf7o">Option 1: YouTube Feed</option>
+                    <option value="m3u:https://akamaized.net">Option 2: India News CDN</option>
+                    <option value="m3u:https://mux.dev">Option 3: Mux Video Loop</option>
+                    <option value="yt:Qv2eRRU_56A">Option 4: SGPC Backup Feed</option>
+                </select>
+            </div>
+
+            <!-- CARD MODULE 3: GLOBAL MEDIA -->
+            <div class="channel-card">
+                <button class="btn-play" onclick="tuneMatrixChannel('skynews')">🇬🇧 Sky News</button>
+                <select id="src-skynews" class="source-selector">
+                    <option value="yt:qhnX4jA0A5paNd1v-zEysw">Option 1: YouTube Live</option>
+                    <option value="m3u:https://akamaized.net">Option 2: NASA TV Public</option>
+                    <option value="m3u:https://akamaized.net">Option 3: NHK World CDN</option>
+                    <option value="m3u:https://mux.dev">Option 4: Mux System Test</option>
+                </select>
+            </div>
+
+            <!-- CARD MODULE 4: ENTERTAINMENT & TECH -->
+            <div class="channel-card">
+                <button class="btn-play" onclick="tuneMatrixChannel('redbull')">🏎️ Red Bull TV</button>
+                <select id="src-redbull" class="source-selector">
+                    <option value="m3u:https://amagi.tv">Option 1: IPTV CDN Link</option>
+                    <option value="m3u:https://mux.dev">Option 2: Mux Stream Test</option>
+                    <option value="m3u:https://longtailvideo.com">Option 3: BipBop Feed</option>
+                    <option value="yt:Qv2eRRU_56A">Option 4: Devotional Monitor</option>
+                </select>
+            </div>
+
         </div>
 
     </div>
 
-    <!-- CONTROL MACHINE ROUTER LOGIC -->
+    <!-- MACHINE ROUTING LOGIC ENGINE -->
     <script>
-        const webView = document.getElementById('display-viewport');
+        const cdnVideo = document.getElementById('native-engine-display');
+        const ytIframe = document.getElementById('youtube-engine-display');
+        let activeHlsLinkInstance = null;
 
-        // ROUTER 1: Specifically loads verified, single direct Video ID streams like SGPC
-        function playVideoID(youtubeVideoId) {
-            webView.src = "https://www.youtube.com/embed/" + youtubeVideoId + "?autoplay=1&mute=0&rel=0";
+        // Clean out display resources completely to prevent layout overlaps
+        function resetActiveViewports() {
+            if (activeHlsLinkInstance) {
+                activeHlsLinkInstance.destroy();
+                activeHlsLinkInstance = null;
+            }
+            cdnVideo.style.display = 'none';
+            cdnVideo.pause();
+            cdnVideo.src = '';
+            
+            ytIframe.style.display = 'none';
+            ytIframe.src = '';
         }
 
-        // ROUTER 2: Core fix for broken channels. Forces YouTube to dynamically crawl 
-        // the network's main profile account and stream whichever video loop is live right now!
-        function playChannelLive(youtubeChannelId) {
-            webView.src = "https://youtube.com" + youtubeChannelId + "&autoplay=1&mute=0&rel=0";
+        // Primary Evaluator: Reads drop-down selection parameters and routes them to the correct internal engine
+        function tuneMatrixChannel(channelKey) {
+            resetActiveViewports();
+            
+            // Reads whichever specific drop-down item is selected for the targeted channel card
+            const dropdownElement = document.getElementById('src-' + channelKey);
+            const chosenValue = dropdownElement.value;
+
+            // Route 1: Target value starts with YouTube prefix sequence
+            if (chosenValue.startsWith('yt:')) {
+                const videoId = chosenValue.substring(3); // Drops the formatting tag "yt:"
+                ytIframe.style.display = 'block';
+                ytIframe.src = "https://youtube.com" + videoId + "?autoplay=1&mute=0&rel=0";
+            } 
+            // Route 2: Target value starts with open IPTV network path sequence
+            else if (chosenValue.startsWith('m3u:')) {
+                const streamUrl = chosenValue.substring(4); // Drops the formatting tag "m3u:"
+                cdnVideo.style.display = 'block';
+
+                if (Hls.isSupported()) {
+                    activeHlsLinkInstance = new Hls();
+                    activeHlsLinkInstance.loadSource(streamUrl);
+                    activeHlsLinkInstance.attachMedia(cdnVideo);
+                    activeHlsLinkInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                        cdnVideo.play().catch(err => console.log("Autoplay buffer restriction cleared."));
+                    });
+                } else if (cdnVideo.canPlayType('application/x-mpegURL')) {
+                    cdnVideo.src = streamUrl;
+                    cdnVideo.play();
+                }
+            }
         }
 
-        // MODULE 2: Simple VLC Protocol stream sender.
-        function playInVLC(rawStreamUrl) {
-            window.location.href = "vlc://" + rawStreamUrl;
-        }
+        // AUTO-LAUNCH BLOCK: Runs SGPC selection instantly upon initial page compilation
+        tuneMatrixChannel('sgpc');
     </script>
-
 </body>
 </html>
