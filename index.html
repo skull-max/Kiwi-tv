@@ -87,7 +87,7 @@
 
     <!-- VISUAL MEDIA PLAYER DISPLAY STAGE -->
     <div class="screen-container">
-        <!-- FIXED DEFAULT CONTENT: Automatically starts playing on page load -->
+        <!-- PERMANENT FIX: Uses un-expiring channel live parameter logic to initialize instantly on page load -->
         <iframe id="display-viewport" src="https://youtube.com" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
 
@@ -96,8 +96,8 @@
 
         <div class="category-title">📺 Native Live Streams (Plays Above)</div>
         <div class="grid">
-            <!-- SOLE STREAM CONTROL ENGINE BUTTON -->
-            <button class="btn btn-yt" onclick="playVideoID('Z2sYgY28STk')">✨ SGPC Live</button>
+            <!-- DYNAMIC LAUNCHER BUTTON: Automatically tracks down whichever stream key is running -->
+            <button class="btn btn-yt" onclick="playSGPCLive()">✨ SGPC Live</button>
         </div>
 
     </div>
@@ -106,9 +106,9 @@
     <script>
         const webView = document.getElementById('display-viewport');
 
-        // ROUTER: Loads the verified direct Video ID stream directly into your frame layout above
-        function playVideoID(youtubeVideoId) {
-            webView.src = "https://youtube.com" + youtubeVideoId + "?autoplay=1&mute=0&rel=0";
+        // ROUTER: Dynamically points to the live feed container of the SGPC official channel profile ID
+        function playSGPCLive() {
+            webView.src = "https://youtube.com";
         }
     </script>
 
