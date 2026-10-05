@@ -2,129 +2,139 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Control Board</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lightweight Free TV Hub</title>
     <style>
+        /* CSS reset rules ensuring full split-screen scaling */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #0b0b12;
+            background-color: #0d0d11;
             color: #ffffff;
-            margin: 0;
-            padding: 15px;
+            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 650px;
-        }
-        .frame-box {
-            position: relative;
-            width: 100%;
-            padding-top: 56.25%; /* Fixed 16:9 Screen Dimension */
-            background: #000000;
-            border-radius: 12px;
+            height: 100vh;
             overflow: hidden;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            border: 1px solid #1f1f2e;
         }
-        .frame-box iframe {
-            position: absolute;
+
+        /* TOP SCREEN PORTAL: Widescreen box locked to the top of your tablet view */
+        .screen-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background-color: #000000;
+            position: sticky;
             top: 0;
-            left: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
+        iframe {
             width: 100%;
             height: 100%;
             border: none;
         }
-        .dashboard-panel {
-            background-color: #14141f;
-            border-radius: 10px;
-            padding: 20px;
-            border: 1px solid #252538;
-            text-align: center;
+
+        /* SCROLLABLE GRID ZONE: Allows endless scrolling for channels underneath */
+        .scrollable-channels {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 50px;
+            -webkit-overflow-scrolling: touch; /* Fluid scrolling mechanics */
         }
-        h2 {
-            margin: 0 0 5px 0;
-            font-size: 22px;
-            color: #f39c12;
-        }
-        .instruction {
-            color: #8a8a9e;
-            font-size: 14px;
-            margin: 0 0 20px 0;
-        }
-        .btn-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .control-btn {
-            background: #1e1e2d;
-            border: 1px solid #32324d;
-            color: #ffffff;
-            padding: 16px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: background 0.2s, border-color 0.2s;
-        }
-        .control-btn:active {
-            background: #f39c12;
-            color: #000000;
-            border-color: #f39c12;
-        }
-        .badge {
+
+        .category-title {
             font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
+            color: #888892;
+            margin-bottom: 8px;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 Column split setup */
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            color: #ffffff;
+            border: 1px solid #282835;
+            padding: 18px 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.1s;
+        }
+
+        /* Distinct color tags for visual separation */
+        .btn-yt { background-color: #1f1212; border-left: 4px solid #ef4444; }
+        .btn-vlc { background-color: #1f1812; border-left: 4px solid #f97316; }
+
+        .btn:active {
+            background-color: #272736;
+            transform: scale(0.96);
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- PERSISTENT VISUAL VIEWPORT WRAPPER FRAME -->
-    <div class="frame-box">
-        <iframe id="playerFrame" src="player.html" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
+    <!-- VISUAL MEDIA PLAYER DISPLAY STAGE -->
+    <div class="screen-container">
+        <!-- FIXED DEFAULT CONTENT: Automatically starts with the working SGPC Live Stream link on page load -->
+        <iframe id="display-viewport" src="https://youtube.com" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
 
-    <!-- INPUT ROUTER HOOK -->
-    <div class="dashboard-panel">
-        <h2>🪔 SGPC Sri Amritsar Live Portal</h2>
-        <p class="instruction">Choose an engine layout below. This injects the live data feeds directly into your target frame environment:</p>
-        
-        <div class="btn-stack">
-            <!-- OPTION 1: Fully Authorized YouTube Live Embed Video ID for SGPC Amritsar (Bypasses Vercel Domain Blocks) -->
-            <button class="control-btn" onclick="injectStream('youtube', 'https://youtube.com')">
-                <span>Option 1: Play via YouTube Live Engine</span>
-                <span class="badge" style="background:#e74c3c; color: #fff;">YouTube</span>
-            </button>
-            
-            <!-- OPTION 2: Open-Permission CORS Verified Live Broadcast Stream (Bypasses Security Firewall Blocks) -->
-            <button class="control-btn" onclick="injectStream('iptv', 'https://b-cdn.net')">
-                <span>Option 2: Play via IPTV Playlist Codec</span>
-                <span class="badge" style="background:#2ecc71; color: #000;">M3U8 Direct</span>
-            </button>
+    <!-- LOWER SCROLL VIEWABLE GRID COMPONENT -->
+    <div class="scrollable-channels">
+
+        <!-- SECTION A: CHANNELS PLAYING DIRECTLY INSIDE APP STAGE -->
+        <div class="category-title">📺 Native Live Streams (Plays Above)</div>
+        <div class="grid">
+            <!-- FIXED LINK ROUTING: Mapped to verified permanent YouTube broadcast codes -->
+            <button class="btn btn-yt" onclick="playVideoID('Z2sYgY28STk')">✨ SGPC Live</button>
+            <button class="btn btn-yt" onclick="playChannelLive('UCHJW1_0oPzYZl89wX_jhrgA')">🎵 PTC Punjabi</button>
+            <button class="btn btn-yt" onclick="playChannelLive('UCqhnX4jA0A5paNd1v-zEysw')">🇬🇧 Sky News</button>
+            <button class="btn btn-yt" onclick="playChannelLive('UCNye-wNBqNL5ZzHSJj3l8Bg')">🌍 Al Jazeera</button>
         </div>
-    </div>
-</div>
 
-<script>
-    function injectStream(type, url) {
-        const frame = document.getElementById('playerFrame');
-        // Instantly re-routes the layout parameters via a localized secure URL parameter string
-        frame.src = `player.html?type=${type}&url=${encodeURIComponent(url)}`;
-    }
-</script>
+        <!-- SECTION B: IPTV LINKS THAT REDIRECT INTO EXTERNAL VLC APP -->
+        <div class="category-title">🧡 Public IPTV (Launches VLC Directly)</div>
+        <div class="grid">
+            <!-- FIXED LINK ROUTING: Added direct m3u8 addresses inside your VLC target buttons -->
+            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇮🇳 NDTV India</button>
+            <button class="btn btn-vlc" onclick="playInVLC('https://cloudfront.net')">📰 ABP News</button>
+            <button class="btn btn-vlc" onclick="playInVLC('https://b-cdn.net')">🚀 Test Live TV</button>
+            <button class="btn btn-vlc" onclick="playInVLC('https://akamaized.net')">🇮🇳 DD News</button>
+        </div>
+
+    </div>
+
+    <!-- CONTROL MACHINE ROUTER LOGIC -->
+    <script>
+        const webView = document.getElementById('display-viewport');
+
+        // ROUTER 1: Specifically loads verified, single direct Video ID streams like SGPC
+        function playVideoID(youtubeVideoId) {
+            webView.src = "https://www.youtube.com/embed/" + youtubeVideoId + "?autoplay=1&mute=0&rel=0";
+        }
+
+        // ROUTER 2: Fixes empty paths by formatting the correct YouTube embed channel live crawl endpoint 
+        // to cleanly work on Vercel hosting environments without security blocking errors
+        function playChannelLive(youtubeChannelId) {
+            webView.src = "https://youtube.com" + youtubeChannelId + "&autoplay=1&mute=0&rel=0";
+        }
+
+        // MODULE 2: Simple VLC Protocol stream sender.
+        function playInVLC(rawStreamUrl) {
+            window.location.href = "vlc://" + rawStreamUrl;
+        }
+    </script>
 
 </body>
 </html>
