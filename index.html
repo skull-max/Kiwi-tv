@@ -3,149 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGPC Live TV Player</title>
+    <title>IPTV Control Board</title>
     <style>
-        :root {
-            --bg-dark: #0a0a0f;
-            --panel-bg: #14141f;
-            --gold-accent: #f39c12;
-            --gold-glow: rgba(243, 156, 18, 0.3);
-            --text-light: #ffffff;
-            --text-muted: #a0a0b0;
-        }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #12121c;
+            color: #ffffff;
             margin: 0;
-            padding: 0;
+            padding: 15px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            min-height: 100vh;
         }
-
-        .player-card {
-            background-color: var(--panel-bg);
-            border: 2px solid #222235;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 450px;
-            padding: 35px 25px;
-            text-align: center;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+        .container {
+            width: 100%;
+            max-width: 700px;
         }
-
-        .icon-container {
+        .player-frame-box {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio Boundary */
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
             margin-bottom: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+            border: 1px solid #222232;
         }
-
-        .live-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background-color: rgba(231, 76, 60, 0.15);
-            color: #e74c3c;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(231, 76, 60, 0.3);
+        .player-frame-box iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
         }
-
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #e74c3c;
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
+        .control-panel {
+            background-color: #1a1a26;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #2a2a3a;
+            text-align: center;
         }
-
-        h1 {
-            font-size: 24px;
-            margin: 0 0 8px 0;
+        h2 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #ff9f43;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .stream-btn {
+            background: #252538;
+            border: 1px solid #3b3b54;
+            color: #fff;
+            padding: 15px;
+            font-size: 15px;
             font-weight: 600;
-            letter-spacing: -0.5px;
-        }
-
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin: 0 0 30px 0;
-            line-height: 1.5;
-        }
-
-        .action-button {
+            border-radius: 8px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            width: 100%;
-            box-sizing: border-box;
-            background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
-            color: var(--text-light);
-            text-decoration: none;
-            padding: 18px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 700;
-            box-shadow: 0 6px 20px var(--gold-glow);
-            transition: transform 0.1s, box-shadow 0.2s;
-            border: none;
-            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
         }
-
-        .action-button:active {
-            transform: scale(0.97);
-            box-shadow: 0 3px 10px var(--gold-glow);
+        .stream-btn:active {
+            background: #ff9f43;
+            color: #000;
+            border-color: #ff9f43;
         }
-
-        .footer-notice {
+        .badge {
             font-size: 11px;
-            color: #55556b;
-            margin-top: 25px;
-            line-height: 1.4;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 0.6; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(0.9); opacity: 0.6; }
+            background: #34495e;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
-<div class="player-card">
-    <div class="icon-container">
-        <!-- Traditional Orange Nishan Sahib Inspired Visual Anchor Component -->
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org">
-            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="#f39c12"/>
-            <path d="M12 6V11C11.17 11 10.5 11.67 10.5 12.5C10.5 13.33 11.17 14 12 14V18H13.5V14C14.33 14 15 13.33 15 12.5C15 11.67 14.33 11 13.5 11V6H12Z" fill="#f39c12"/>
-        </svg>
+<div class="container">
+    <!-- PERSISTENT TARGET FRAME CANVAS -->
+    <div class="player-frame-box">
+        <iframe id="targetFrame" src="player.html" allow="autoplay; fullscreen"></iframe>
     </div>
 
-    <div class="live-indicator">
-        <div class="live-dot"></div>
-        Direct Feed Active
-    </div>
-
-    <h1>SGPC Amritsar</h1>
-    <p class="subtitle">Live Gurbani Kirtan broadcast from Sachkhand Sri Harmandir Sahib (Sri Darbar Sahib)</p>
-
-    <!-- Fail-Safe Direct Application Redirection Pipeline -->
-    <a href="https://youtube.com" target="_blank" class="action-button">
-        ▶ Watch Live Stream
-    </a>
-
-    <div class="footer-notice">
-        Bypasses local device sandbox security blocks by mapping target feeds straight to your tablet's optimized hardware video renderer.
+    <!-- STREAM CODING MANAGEMENT DASHBOARD -->
+    <div class="control-panel">
+        <h2>🪔 SGPC Amritsar Live Directory</h2>
+        <p style="color:#8a8a9e; font-size:14px; margin:0;">Select your preferred underlying engine option to patch the live stream feed straight to your frame:</p>
+        
+        <div class="btn-group">
+            <!-- Option 1: YouTube Live Stream Embedded Path -->
+            <button class="stream-btn" onclick="sendMedia('youtube', 'https://youtube.com')">
+                <span>Option 1: Play Stream via YouTube Live Engine</span>
+                <span class="badge" style="background:#e74c3c;">YT Portal</span>
+            </button>
+            
+            <!-- Option 2: IPTV Playlist URL (Direct streaming codec link extracted from standard playlists) -->
+            <button class="stream-btn" onclick="sendMedia('iptv', 'https://akamaized.net')">
+                <span>Option 2: Play Stream via IPTV Playlist Codec</span>
+                <span class="badge" style="background:#2ecc71;">M3U8 Direct</span>
+            </button>
+        </div>
     </div>
 </div>
+
+<script>
+    function sendMedia(mediaType, url) {
+        const frameWindow = document.getElementById('targetFrame').contentWindow;
+        
+        // Safely shoot structural data commands directly across the frame barrier
+        frameWindow.postMessage({
+            type: "PLAY_STREAM",
+            mediaType: mediaType,
+            url: url
+        }, "*");
+    }
+</script>
 
 </body>
 </html>
