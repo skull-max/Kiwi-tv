@@ -4,12 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Universal Multi-Source Matrix</title>
-    
-    <!-- Programmatic HLS stream unpacker engine used to load direct CDN links natively -->
-    <script src="https://jsdelivr.net"></script>
-
     <style>
-        /* CSS reset layout constraints preventing touch-scaling glitches */
+        /* CSS rules preventing touch-scaling glitches on mobile or tablet layouts */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
@@ -22,7 +18,7 @@
             overflow: hidden;
         }
 
-        /* 1. VIEWPORT LAYOUT: Keeps your media window cleanly locked on top */
+        /* 1. STICKY TOP SCREEN: Locks your visual TV player neatly at the top of your tablet screen */
         .screen-container {
             width: 100%;
             aspect-ratio: 16/9;
@@ -33,22 +29,18 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.6);
         }
 
-        video, iframe {
+        iframe {
             width: 100%;
             height: 100%;
             border: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: none;
         }
 
-        /* 2. LOWER TOUCH SECTION: Grid items scroll completely free underneath the stream screen */
+        /* 2. LOWER TOUCH ZONE: Grid items scroll completely free underneath the stream screen */
         .scrollable-channels {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
-            padding-bottom: 50px;
+            padding-bottom: 60px;
             -webkit-overflow-scrolling: touch;
         }
 
@@ -65,7 +57,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr); /* Creates two columns for phones/tablets */
             gap: 12px;
             margin-bottom: 25px;
         }
@@ -112,10 +104,10 @@
 </head>
 <body>
 
-    <!-- VISUAL MEDIA PLAYER DISPLAY STAGE -->
+    <!-- VISUAL MEDIA PLAYER DISPLAY CONTAINER -->
     <div class="screen-container">
-        <video id="native-engine-display" controls autoplay playsinline></video>
-        <iframe id="youtube-engine-display" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        <!-- Built using the exact same secure link structure that successfully played your SGPC stream -->
+        <iframe id="youtube-engine-display" src="https://youtube.com" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
 
     <!-- LOWER SELECTION MATRIX -->
@@ -128,43 +120,43 @@
             <div class="channel-card">
                 <button class="btn-play" onclick="tuneMatrixChannel('sgpc')">✨ SGPC Live</button>
                 <select id="src-sgpc" class="source-selector">
-                    <option value="yt_live:UCkA21M22vGK9GtAvq3DvSlA">Source 1: Official Channel Feed</option>
-                    <option value="yt_vid:Qv2eRRU_56A">Source 2: Direct Video Link</option>
-                    <option value="m3u:https://mux.dev">Source 3: Test Loop 1</option>
-                    <option value="m3u:https://longtailvideo.com">Source 4: Test Loop 2</option>
+                    <option value="FMQ3uVD6jX8">Source 1: Daily Live Main</option>
+                    <option value="ANwqeF-PW1g">Source 2: Morning Session</option>
+                    <option value="UDqpLH181Dw">Source 3: Evening Session</option>
+                    <option value="oo9AUNyBJjg">Source 4: Backup Stream</option>
                 </select>
             </div>
 
-            <!-- CARD MODULE 2: PTC PUNJABI -->
+            <!-- CARD MODULE 2: PTC PUNJABI NEWS -->
             <div class="channel-card">
-                <button class="btn-play" onclick="tuneMatrixChannel('ptc')">🎵 PTC Punjabi</button>
+                <button class="btn-play" onclick="tuneMatrixChannel('ptc')">🎵 PTC News Live</button>
                 <select id="src-ptc" class="source-selector">
-                    <option value="yt_live:UCHJW1_0oPzYZl89wX_jhrgA">Source 1: Official Channel Feed</option>
-                    <option value="yt_vid:b2_x60nNf7o">Source 2: Direct Video Link</option>
-                    <option value="m3u:https://akamaized.net">Source 3: Indian CDN Network</option>
-                    <option value="m3u:https://mux.dev">Source 4: Test Video Loop</option>
+                    <option value="1zqa-He6NXg">Source 1: Active Stream</option>
+                    <option value="bvRiRnRX4ko">Source 2: Backup Loop 1</option>
+                    <option value="VBFMudrPB-A">Source 3: Backup Loop 2</option>
+                    <option value="2sDz6MMgfU0">Source 4: Regional Stream</option>
                 </select>
             </div>
 
-            <!-- CARD MODULE 3: GLOBAL MEDIA -->
+            <!-- CARD MODULE 3: GLOBAL CHANNELS -->
             <div class="channel-card">
                 <button class="btn-play" onclick="tuneMatrixChannel('skynews')">🇬🇧 Sky News</button>
                 <select id="src-skynews" class="source-selector">
-                    <option value="yt_live:UCqhnX4jA0A5paNd1v-zEysw">Source 1: Official Channel Feed</option>
-                    <option value="m3u:https://akamaized.net">Source 2: NASA TV Public</option>
-                    <option value="m3u:https://akamaized.net">Source 3: NHK World CDN</option>
-                    <option value="m3u:https://mux.dev">Source 4: Test Video Loop</option>
+                    <option value="9Auqeyv765k">Source 1: International Live</option>
+                    <option value="qhnX4jA0A5paNd1v-zEysw">Source 2: Network Feed</option>
+                    <option value="v=9Auqeyv765k">Source 3: Backup Stream</option>
+                    <option value="FMQ3uVD6jX8">Source 4: SGPC Devotional</option>
                 </select>
             </div>
 
-            <!-- CARD MODULE 4: ENTERTAINMENT & SPORT -->
+            <!-- CARD MODULE 4: POPULAR FREE CHANNELS -->
             <div class="channel-card">
-                <button class="btn-play" onclick="tuneMatrixChannel('redbull')">🏎️ Red Bull TV</button>
-                <select id="src-redbull" class="source-selector">
-                    <option value="m3u:https://amagi.tv">Source 1: IPTV CDN Link</option>
-                    <option value="m3u:https://mux.dev">Source 2: Mux Stream Test</option>
-                    <option value="m3u:https://longtailvideo.com">Source 3: BipBop Engine Feed</option>
-                    <option value="yt_vid:Qv2eRRU_56A">Source 4: Devotional Backup</option>
+                <button class="btn-play" onclick="tuneMatrixChannel('aajtak')">🔥 Aaj Tak</button>
+                <select id="src-aajtak" class="source-selector">
+                    <option value="Nq2wYlWFucg">Source 1: Live Main Feed</option>
+                    <option value="e1FIApIafWE">Source 2: India TV Live</option>
+                    <option value="sYZtOFzM78M">Source 3: India Today Feed</option>
+                    <option value="1zqa-He6NXg">Source 4: PTC News Backup</option>
                 </select>
             </div>
 
@@ -172,64 +164,19 @@
 
     </div>
 
-    <!-- CORE INTERNAL INTERFACE LOGIC ENGINE -->
+    <!-- CORE INTERNAL LOGIC ENGINE -->
     <script>
-        const cdnVideo = document.getElementById('native-engine-display');
         const ytIframe = document.getElementById('youtube-engine-display');
-        let activeHlsLinkInstance = null;
 
-        function resetActiveViewports() {
-            if (activeHlsLinkInstance) {
-                activeHlsLinkInstance.destroy();
-                activeHlsLinkInstance = null;
-            }
-            cdnVideo.style.display = 'none';
-            cdnVideo.pause();
-            cdnVideo.src = '';
-            
-            ytIframe.style.display = 'none';
-            ytIframe.src = '';
-        }
-
+        // Master routing controller
         function tuneMatrixChannel(channelKey) {
-            resetActiveViewports();
-            
+            // Step 1: Grabs whichever specific drop-down item is selected for the targeted channel card
             const dropdownElement = document.getElementById('src-' + channelKey);
-            const chosenValue = dropdownElement.value;
+            const chosenVideoId = dropdownElement.value;
 
-            // Route Type A: Permanent Unexpiring Live Channel ID Feed
-            if (chosenValue.startsWith('yt_live:')) {
-                const channelId = chosenValue.substring(8); 
-                ytIframe.style.display = 'block';
-                ytIframe.src = "https://youtube.com" + channelId + "&autoplay=1&mute=0&rel=0";
-            } 
-            // Route Type B: Direct Explicit Video ID Feed
-            else if (chosenValue.startsWith('yt_vid:')) {
-                const videoId = chosenValue.substring(7); 
-                ytIframe.style.display = 'block';
-                ytIframe.src = "https://youtube.com" + videoId + "?autoplay=1&mute=0&rel=0";
-            } 
-            // Route Type C: Internal HLS Stream Player for CDN Nodes
-            else if (chosenValue.startsWith('m3u:')) {
-                const streamUrl = chosenValue.substring(4); 
-                cdnVideo.style.display = 'block';
-
-                if (Hls.isSupported()) {
-                    activeHlsLinkInstance = new Hls();
-                    activeHlsLinkInstance.loadSource(streamUrl);
-                    activeHlsLinkInstance.attachMedia(cdnVideo);
-                    activeHlsLinkInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                        cdnVideo.play().catch(err => console.log("Blocked browser autoplay safety trigger."));
-                    });
-                } else if (cdnVideo.canPlayType('application/x-mpegURL')) {
-                    cdnVideo.src = streamUrl;
-                    cdnVideo.play();
-                }
-            }
+            // Step 2: Instantly injects the clean ID using your verified functional string structure
+            ytIframe.src = "https://youtube.com" + chosenVideoId + "?autoplay=1&mute=0&rel=0";
         }
-
-        // Auto-run SGPC channel choice when the portal opens
-        tuneMatrixChannel('sgpc');
     </script>
 </body>
 </html>
